@@ -19,6 +19,8 @@ uint32_t ha32AllocHandles(HandleAlloc32* ha, uint32_t n);
 void ha32FreeHandles(HandleAlloc32* ha, uint32_t firstHandle, uint32_t n);
 bool ha32AllocSpecificHandle(HandleAlloc32* ha, uint32_t handle);
 uint32_t ha32GetCapacity(HandleAlloc32* ha);
+
+bool ha32IsValid(HandleAlloc32* ha, uint32_t handle);
 }
 
 #endif

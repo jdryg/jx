@@ -11,6 +11,10 @@
 #	define JX_CONFIG_TRACE_ALLOCATIONS 0
 #endif
 
+#ifndef JX_CONFIG_MATH_SIMD
+#	define JX_CONFIG_MATH_SIMD 1
+#endif
+
 #if JX_CONFIG_DEBUG
 #include <bx/debug.h>
 

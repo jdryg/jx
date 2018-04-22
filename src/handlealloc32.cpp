@@ -203,6 +203,17 @@ uint32_t ha32GetCapacity(HandleAlloc32* ha)
 	return ha->m_HandleCapacity;
 }
 
+bool ha32IsValid(HandleAlloc32* ha, uint32_t handle)
+{
+	if (handle >= ha->m_HandleCapacity) {
+		return false;
+	}
+
+	// TODO: Check if handle is free
+
+	return true;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Internal
 //
