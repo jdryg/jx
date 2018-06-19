@@ -22,7 +22,7 @@ inline bool bitSetGetBit(const BitSet* bs, uint32_t bit)
 	return (bs->m_Bits[qwordID] & (1ull << bitID)) != 0;
 }
 
-void bitSetSetBit(BitSet* bs, uint32_t bit, bool val)
+inline void bitSetSetBit(BitSet* bs, uint32_t bit, bool val)
 {
 	const uint32_t qwordID = bit >> 6;
 	const uint32_t bitID = bit & 63;
@@ -33,7 +33,7 @@ void bitSetSetBit(BitSet* bs, uint32_t bit, bool val)
 	}
 }
 
-void bitSetToggleBit(BitSet* bs, uint32_t bit)
+inline void bitSetToggleBit(BitSet* bs, uint32_t bit)
 {
 	const uint32_t qwordID = bit >> 6;
 	const uint32_t bitID = bit & 63;

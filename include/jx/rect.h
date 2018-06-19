@@ -25,7 +25,7 @@ void rectAoSToSoA(const Rect* aos, uint32_t numRects, RectSoA* soa);
 void rectSoAToAoS(const RectSoA* soa, uint32_t numRects, Rect* aos);
 
 void rectIntersect(const RectSoA* soa, uint32_t numRects, const Rect* test, bool* results);
-void rectIntersect(const RectSoA* soa, uint32_t numRects, const Rect* test, BitSet* results);
+void rectIntersectBitset(const RectSoA* soa, uint32_t numRects, const Rect* test, uint8_t* bitset);
 }
 
 #endif

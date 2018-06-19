@@ -43,6 +43,8 @@
 #define JX_CHECK(_condition, _format, ...)
 #endif
 
+#define JX_NOT_IMPLEMENTED() JX_CHECK(false, "Not implemented yet");
+
 namespace bx
 {
 struct AllocatorI;

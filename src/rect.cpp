@@ -1,5 +1,6 @@
 #include <jx/rect.h>
 #include <jx/sys.h>
+#include <jx/bitset.h>
 
 #if JX_CONFIG_MATH_SIMD
 #include <xmmintrin.h>
@@ -379,9 +380,124 @@ void rectIntersect(const RectSoA* soa, uint32_t numRects, const Rect* test, bool
 	}
 }
 
-void rectIntersect(const RectSoA* soa, uint32_t numRects, const Rect* test, BitSet* results)
+// NOTE: This is the same code as above but the results are packed into a bitset. 
+// No measurable performance difference but it uses less memory.
+void rectIntersectBitset(const RectSoA* soa, uint32_t numRects, const Rect* test, uint8_t* bitset)
 {
-#error "Not implemented yet"
+	const float* minx = soa->m_MinX;
+	const float* miny = soa->m_MinY;
+	const float* maxx = soa->m_MaxX;
+	const float* maxy = soa->m_MaxY;
+
+	const __m128 xmm_test = _mm_loadu_ps((const float*)test);
+	const __m128 testMinX = _mm_shuffle_ps(xmm_test, xmm_test, _MM_SHUFFLE(0, 0, 0, 0));
+	const __m128 testMinY = _mm_shuffle_ps(xmm_test, xmm_test, _MM_SHUFFLE(1, 1, 1, 1));
+	const __m128 testMaxX = _mm_shuffle_ps(xmm_test, xmm_test, _MM_SHUFFLE(2, 2, 2, 2));
+	const __m128 testMaxY = _mm_shuffle_ps(xmm_test, xmm_test, _MM_SHUFFLE(3, 3, 3, 3));
+
+	const uint32_t iter = numRects >> 3; // 8 rects / iter
+	for (uint32_t i = 0; i < iter; ++i) {
+		const __m128 culled0_0123 = _mm_or_ps(
+			_mm_cmpgt_ps(_mm_load_ps(minx), testMaxX),
+			_mm_cmpgt_ps(_mm_load_ps(miny), testMaxY)
+		);
+		const __m128 culled1_0123 = _mm_or_ps(
+			_mm_cmplt_ps(_mm_load_ps(maxx), testMinX),
+			_mm_cmplt_ps(_mm_load_ps(maxy), testMinY)
+		);
+
+		const __m128 culled0_4567 = _mm_or_ps(
+			_mm_cmpgt_ps(_mm_load_ps(minx + 4), testMaxX),
+			_mm_cmpgt_ps(_mm_load_ps(miny + 4), testMaxY)
+		);
+		const __m128 culled1_4567 = _mm_or_ps(
+			_mm_cmplt_ps(_mm_load_ps(maxx + 4), testMinX),
+			_mm_cmplt_ps(_mm_load_ps(maxy + 4), testMinY)
+		);
+
+		const __m128 culled0123 = _mm_or_ps(culled0_0123, culled1_0123);
+		const __m128 culled4567 = _mm_or_ps(culled0_4567, culled1_4567);
+
+		const uint32_t mask0123 = (uint32_t)_mm_movemask_ps(culled0123);
+		const uint32_t mask4567 = (uint32_t)_mm_movemask_ps(culled4567);
+
+		bitset[0] = ~(uint8_t)(mask0123 | (mask4567 << 4));
+
+		bitset++;
+		minx += 8;
+		miny += 8;
+		maxx += 8;
+		maxy += 8;
+}
+
+	uint32_t rem = numRects & 7;
+	if (rem) {
+		uint32_t shift = 0;
+		bitset[0] = 0;
+
+		if (rem >= 4) {
+			const __m128 culled0_0123 = _mm_or_ps(
+				_mm_cmpgt_ps(_mm_load_ps(minx), testMaxX),
+				_mm_cmpgt_ps(_mm_load_ps(miny), testMaxY)
+			);
+
+			const __m128 culled1_0123 = _mm_or_ps(
+				_mm_cmplt_ps(_mm_load_ps(maxx), testMinX),
+				_mm_cmplt_ps(_mm_load_ps(maxy), testMinY)
+			);
+
+			const __m128 culled0123 = _mm_or_ps(culled0_0123, culled1_0123);
+
+			const uint32_t mask0123 = (uint32_t)_mm_movemask_ps(culled0123);
+
+			bitset[0] |= (uint8_t)(mask0123 & 0x0F);
+			shift = 4;
+
+			minx += 4;
+			miny += 4;
+			maxx += 4;
+			maxy += 4;
+
+			rem -= 4;
+		}
+
+		if (rem >= 2) {
+			const __m128 culled0_01 = _mm_or_ps(
+				_mm_cmpgt_ps(_mm_loadl_pi(_mm_undefined_ps(), (const __m64*)minx), testMaxX),
+				_mm_cmpgt_ps(_mm_loadl_pi(_mm_undefined_ps(), (const __m64*)miny), testMaxY)
+			);
+
+			const __m128 culled1_01 = _mm_or_ps(
+				_mm_cmplt_ps(_mm_loadl_pi(_mm_undefined_ps(), (const __m64*)maxx), testMinX),
+				_mm_cmplt_ps(_mm_loadl_pi(_mm_undefined_ps(), (const __m64*)maxy), testMinY)
+			);
+
+			const __m128 culled01 = _mm_or_ps(culled0_01, culled1_01);
+
+			const uint32_t mask01 = (uint32_t)_mm_movemask_ps(culled01);
+
+			bitset[0] |= (uint8_t)((mask01 & 0x03) << shift);
+			shift += 2;
+
+			minx += 2;
+			miny += 2;
+			maxx += 2;
+			maxy += 2;
+
+			rem -= 2;
+		}
+
+		if (rem) {
+			if ((minx[0] > test->m_MaxX) ||
+				(miny[0] > test->m_MaxY) ||
+				(maxx[0] < test->m_MinX) ||
+				(maxy[0] < test->m_MinY)) {
+				bitset[0] |= (uint8_t)(1 << shift);
+			}
+		}
+
+		bitset[0] = ~bitset[0];
+	}
 }
 
 #else // !JX_CONFIG_MATH_SIMD
@@ -410,6 +526,10 @@ void rectSoAToAoS(const RectSoA* soa, uint32_t numRects, Rect* aos)
 }
 
 void rectIntersect(const RectSoA* soa, uint32_t numRects, const Rect* test, bool* results)
+{
+#error "Not implemented yet"
+}
+void rectIntersectBitset(const RectSoA* soa, uint32_t numRects, const Rect* test, uint8_t* bitset)
 {
 #error "Not implemented yet"
 }

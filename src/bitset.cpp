@@ -1,5 +1,6 @@
 #include <jx/bitset.h>
 #include <jx/sys.h>
+#include <bx/allocator.h>
 
 namespace jx
 {
