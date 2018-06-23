@@ -2,6 +2,8 @@
 
 namespace jx
 {
+#define UTF8_HORIZONTAL_ELLIPSIS 0x2026 // https://www.fileformat.info/info/unicode/char/2026/index.htm
+
 /*
 * This may not be the best value, but it's one that isn't represented
 *  in Unicode (0x10FFFF is the largest codepoint value). We return this
@@ -344,5 +346,32 @@ void utf8FromCodepoint(uint32_t cp, char* str)
 	uint32_t len = 8;
 	utf8FromCodepoint(cp, &str, &len);
 	*str = '\0';
+}
+
+uint32_t utf8Ellipsize(const char* src, uint32_t maxChars, char* dst, uint32_t dstSize)
+{
+	const char* dstStart = dst;
+	while (maxChars-- > 1 && *src) {
+		const uint32_t cp = utf8ToCodepoint(&src);
+		utf8FromCodepoint(cp, &dst, &dstSize);
+	}
+
+	// If there are more utf8 characters in src...
+	if (*src) {
+		// Get the next codepoint.
+		const uint32_t cp = utf8ToCodepoint(&src);
+		
+		// If there are still more characters in src...
+		if (*src) {
+			// write ellipsis as the last character in dst.
+			utf8FromCodepoint(UTF8_HORIZONTAL_ELLIPSIS, &dst, &dstSize);
+		} else {
+			// otherwise write the last character to dst.
+			utf8FromCodepoint(cp, &dst, &dstSize);
+		}
+	}
+	*dst = '\0';
+
+	return (uint32_t)(dst - dstStart);
 }
 }

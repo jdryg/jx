@@ -1,6 +1,7 @@
 #include <jx/rect.h>
 #include <jx/sys.h>
 #include <jx/bitset.h>
+#include <bx/math.h>
 
 #if JX_CONFIG_MATH_SIMD
 #include <xmmintrin.h>
@@ -500,6 +501,30 @@ void rectIntersectBitset(const RectSoA* soa, uint32_t numRects, const Rect* test
 	}
 }
 
+void rectCalcFromPointList(const float* points, uint32_t numPoints, Rect* rect)
+{
+	// TODO: SIMD
+	JX_CHECK(numPoints >= 1, "Invalid number of points");
+
+	rect->m_MinX = points[0];
+	rect->m_MinY = points[1];
+	rect->m_MaxX = points[0];
+	rect->m_MaxY = points[1];
+	points += 2;
+
+	for (uint32_t i = 1; i < numPoints; ++i) {
+		rectExpandToInclude(rect, points[0], points[1]);
+		points += 2;
+	}
+}
+
+void rectExpandToInclude(Rect* rect, float x, float y)
+{
+	rect->m_MinX = bx::min<float>(rect->m_MinX, x);
+	rect->m_MinY = bx::min<float>(rect->m_MinY, y);
+	rect->m_MaxX = bx::max<float>(rect->m_MaxX, x);
+	rect->m_MaxY = bx::max<float>(rect->m_MaxY, y);
+}
 #else // !JX_CONFIG_MATH_SIMD
 void rectAoSToSoA(const Rect* aos, uint32_t numRects, RectSoA* soa)
 {
