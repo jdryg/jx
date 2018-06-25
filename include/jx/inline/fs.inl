@@ -4,6 +4,33 @@
 
 namespace jx
 {
+inline void fsFileReadString(File* f, char* str, uint32_t maxLen)
+{
+	const uint32_t len = fsFileRead<uint32_t>(f);
+	const uint32_t numBytesToRead = bx::min<uint32_t>(len, maxLen - 1);
+
+	if (numBytesToRead) {
+		fsFileReadBytes(f, str, numBytesToRead);
+		str += numBytesToRead;
+	}
+	*str = '\0';
+
+	const uint32_t remainingBytes = len - numBytesToRead;
+	if (remainingBytes) {
+		fsFileSeek(f, remainingBytes, SeekOrigin::Current);
+	}
+}
+
+inline void fsFileWriteString(File* f, const char* str)
+{
+	const uint32_t len = bx::strLen(str);
+	if (!fsFileWrite<uint32_t>(f, len)) {
+		return;
+	}
+
+	fsFileWriteBytes(f, str, len);
+}
+
 template<typename T>
 inline T fsFileRead(File* f)
 {
@@ -35,7 +62,7 @@ inline bool fsFileWrite(File* f, T val)
 inline bool fsFileWrite(File* f, const char* str)
 {
 	const uint32_t len = bx::strLen(str);
-	if (fsFileWrite<uint32_t>(f, len)) {
+	if (!fsFileWrite<uint32_t>(f, len)) {
 		return false;
 	}
 

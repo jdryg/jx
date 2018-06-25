@@ -178,6 +178,15 @@ uint64_t fsFileGetSize(File* f)
 	return (uint64_t)fileSize.QuadPart;
 }
 
+void fsFileSeek(File* f, int offset, SeekOrigin::Enum origin)
+{
+	JX_CHECK(f != nullptr && f->m_Handle != INVALID_HANDLE_VALUE, "Trying to read from a null file");
+	
+	DWORD moveMethod = origin == SeekOrigin::Begin ? FILE_BEGIN : (origin == SeekOrigin::Current ? FILE_CURRENT : FILE_END);
+	DWORD result = ::SetFilePointer(f->m_Handle, offset, NULL, moveMethod);
+	JX_CHECK(result != INVALID_SET_FILE_POINTER, "SetFilePointer failed");
+}
+
 bool fsFileRemove(BaseDir::Enum baseDir, const char* relPath)
 {
 	if (baseDir != BaseDir::UserData) {

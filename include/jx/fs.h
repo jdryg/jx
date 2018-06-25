@@ -16,6 +16,16 @@ struct BaseDir
 	};
 };
 
+struct SeekOrigin
+{
+	enum Enum
+	{
+		Begin,
+		Current,
+		End
+	};
+};
+
 struct File;
 
 typedef jtl::delegate<void(const char* relPath, bool isFile)> EnumerateFilesCallback;
@@ -29,6 +39,7 @@ void fsFileClose(File* f);
 uint32_t fsFileReadBytes(File* f, void* buffer, uint32_t len);
 uint32_t fsFileWriteBytes(File* f, const void* buffer, uint32_t len);
 uint64_t fsFileGetSize(File* f);
+void fsFileSeek(File* f, int offset, SeekOrigin::Enum origin);
 
 bool fsFileRemove(BaseDir::Enum baseDir, const char* relPath);
 
@@ -37,6 +48,9 @@ bool fsCreateFolderTree(BaseDir::Enum baseDir, const char* relPath);
 bool fsEnumerateFiles(BaseDir::Enum baseDir, const char* relPath, EnumerateFilesCallback callback);
 
 void fsConvertStringToFilename(const char* name, char* filename, uint32_t maxLen);
+
+void fsFileReadString(File* f, char* str, uint32_t maxLen);
+void fsFileWriteString(File* f, const char* str);
 
 template<typename T> T fsFileRead(File* f);
 template<> jtl::string fsFileRead(File* f);
