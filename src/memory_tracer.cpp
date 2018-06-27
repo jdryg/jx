@@ -311,6 +311,7 @@ void getStackTrace(uint64_t* stack, uint32_t size)
 {
 	JX_CHECK(s_MemTracer != nullptr, "Memory tracer hasn't been initialized");
 
+#if 0
 	MemTracer* ctx = s_MemTracer;
 
 	DWORD machine = IMAGE_FILE_MACHINE_AMD64;
@@ -343,6 +344,9 @@ void getStackTrace(uint64_t* stack, uint32_t size)
 			break;
 		}
 	}
+#else
+	RtlCaptureStackBackTrace(2, size, (PVOID*)stack, NULL);
+#endif
 }
 #endif
 }
