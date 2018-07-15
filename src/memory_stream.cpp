@@ -172,4 +172,9 @@ jx::hash128 memStreamCalcHash(const MemoryStream* ms)
 	jx::spookyHash128(ms->m_Data, ms->m_Size, &hash.m_Value[0], &hash.m_Value[1]);
 	return hash;
 }
+
+uint32_t memStreamGetSize(const MemoryStream* ms)
+{
+	return ms->m_Size;
+}
 }

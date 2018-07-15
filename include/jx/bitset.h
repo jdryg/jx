@@ -28,6 +28,8 @@ void bitSetClear(BitSet* bs);
 bool bitSetGetBit(const BitSet* bs, uint32_t bit);
 void bitSetSetBit(BitSet* bs, uint32_t bit, bool val);
 void bitSetToggleBit(BitSet* bs, uint32_t bit);
+
+bool bitSetIsCleared(const BitSet* bs);
 }
 
 #include "inline/bitset.inl"

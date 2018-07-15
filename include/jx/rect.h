@@ -2,9 +2,12 @@
 #define JX_RECT_H
 
 #include <stdint.h>
+#include <bx/math.h>
 
 namespace jx
 {
+struct Vec2;
+
 struct Rect
 {
 	float m_MinX, m_MinY;
@@ -26,7 +29,8 @@ void rectIntersect(const RectSoA* soa, uint32_t numRects, const Rect* test, bool
 void rectIntersectBitset(const RectSoA* soa, uint32_t numRects, const Rect* test, uint8_t* bitset);
 
 void rectCalcFromPointList(const float* points, uint32_t numPoints, Rect* rect);
-void rectExpandToInclude(Rect* rect, float x, float y);
+
+bool rectLineSegmentIntersection(const Rect* rect, const jx::Vec2& s, const jx::Vec2& e);
 
 inline void rectInflate(Rect* rect, float x, float y)
 {
@@ -36,6 +40,14 @@ inline void rectInflate(Rect* rect, float x, float y)
 	rect->m_MinY -= half_y;
 	rect->m_MaxX += half_x;
 	rect->m_MaxY += half_y;
+}
+
+inline void rectExpandToInclude(Rect* rect, float x, float y)
+{
+	rect->m_MinX = bx::min<float>(rect->m_MinX, x);
+	rect->m_MinY = bx::min<float>(rect->m_MinY, y);
+	rect->m_MaxX = bx::max<float>(rect->m_MaxX, x);
+	rect->m_MaxY = bx::max<float>(rect->m_MaxY, y);
 }
 }
 

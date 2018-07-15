@@ -32,4 +32,16 @@ void bitSetClear(BitSet* bs)
 {
 	bx::memSet(bs->m_Bits, 0, sizeof(uint64_t) * bs->m_Size);
 }
+
+bool bitSetIsCleared(const BitSet* bs)
+{
+	const uint32_t sz = bs->m_Size;
+	for (uint32_t i = 0; i < sz; ++i) {
+		if (bs->m_Bits[i] != 0) {
+			return false;
+		}
+	}
+
+	return true;
+}
 }

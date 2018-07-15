@@ -1,6 +1,7 @@
 #include <jx/rect.h>
 #include <jx/sys.h>
 #include <jx/bitset.h>
+#include <jx/vec2.h>
 #include <bx/math.h>
 
 #if JX_CONFIG_MATH_SIMD
@@ -517,14 +518,6 @@ void rectCalcFromPointList(const float* points, uint32_t numPoints, Rect* rect)
 		points += 2;
 	}
 }
-
-void rectExpandToInclude(Rect* rect, float x, float y)
-{
-	rect->m_MinX = bx::min<float>(rect->m_MinX, x);
-	rect->m_MinY = bx::min<float>(rect->m_MinY, y);
-	rect->m_MaxX = bx::max<float>(rect->m_MaxX, x);
-	rect->m_MaxY = bx::max<float>(rect->m_MaxY, y);
-}
 #else // !JX_CONFIG_MATH_SIMD
 void rectAoSToSoA(const Rect* aos, uint32_t numRects, RectSoA* soa)
 {
@@ -559,4 +552,58 @@ void rectIntersectBitset(const RectSoA* soa, uint32_t numRects, const Rect* test
 #error "Not implemented yet"
 }
 #endif
+
+bool rectLineSegmentIntersection(const Rect* rect, const jx::Vec2& s, const jx::Vec2& e)
+{
+	float st, et, fst = 0, fet = 1;
+
+	float const *bmin = &rect->m_MinX;
+	float const *bmax = &rect->m_MaxX;
+	float const *si = &s.x;
+	float const *ei = &e.x;
+
+	for (int i = 0; i < 2; i++) {
+		const float coordMin = *bmin;
+		const float coordMax = *bmax;
+		const float coordStart = *si;
+		const float coordEnd = *ei;
+
+		if (coordStart < coordEnd) {
+			if (coordStart > coordMax || coordEnd < coordMin) {
+				return false;
+			}
+
+			const float di = coordEnd - coordStart;
+			st = (coordStart < coordMin) ? (coordMin - coordStart) / di : 0;
+			et = (coordEnd > coordMax) ? (coordMax - coordStart) / di : 1;
+		} else {
+			if (coordEnd > coordMax || coordStart < coordMin) {
+				return false;
+			}
+
+			const float di = coordEnd - coordStart;
+			st = (coordStart > coordMax) ? (coordMax - coordStart) / di : 0;
+			et = (coordEnd < coordMin) ? (coordMin - coordStart) / di : 1;
+		}
+
+		if (st > fst) {
+			fst = st;
+		}
+
+		if (et < fet) {
+			fet = et;
+		}
+
+		if (fet < fst) {
+			return false;
+		}
+
+		bmin++;
+		bmax++;
+		si++;
+		ei++;
+	}
+
+	return true;
+}
 }

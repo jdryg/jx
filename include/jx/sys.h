@@ -26,14 +26,14 @@
 #define JX_WARN(_condition, _format, ...) \
 	do { \
 		if (!(_condition) ) { \
-			JX_TRACE(BX_FILE_LINE_LITERAL _format, ##__VA_ARGS__); \
+			bx::debugPrintf(BX_FILE_LINE_LITERAL "jx " _format "\n", ##__VA_ARGS__); \
 		} \
 	} while(0)
 
 #define JX_CHECK(_condition, _format, ...) \
 	do { \
 		if (!(_condition) ) { \
-			JX_TRACE(BX_FILE_LINE_LITERAL _format, ##__VA_ARGS__); \
+			bx::debugPrintf(BX_FILE_LINE_LITERAL "jx " _format "\n", ##__VA_ARGS__); \
 			bx::debugBreak(); \
 		} \
 	} while(0)
