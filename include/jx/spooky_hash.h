@@ -2,6 +2,7 @@
 #define JX_SPOOKY_HASH_H
 
 #include <stdint.h>
+#include <stddef.h> // size_t
 
 // http://burtleburtle.net/bob/hash/spooky.html
 //

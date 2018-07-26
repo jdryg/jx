@@ -265,6 +265,7 @@ void rectSoAToAoS(const RectSoA* soa, uint32_t numRects, Rect* aos)
 	}
 }
 
+#if 0
 void rectIntersect(const RectSoA* soa, uint32_t numRects, const Rect* test, bool* results)
 {
 	const float* minx = soa->m_MinX;
@@ -381,6 +382,7 @@ void rectIntersect(const RectSoA* soa, uint32_t numRects, const Rect* test, bool
 		}
 	}
 }
+#endif
 
 // NOTE: This is the same code as above but the results are packed into a bitset. 
 // No measurable performance difference but it uses less memory.
@@ -501,23 +503,6 @@ void rectIntersectBitset(const RectSoA* soa, uint32_t numRects, const Rect* test
 		bitset[0] = ~bitset[0];
 	}
 }
-
-void rectCalcFromPointList(const float* points, uint32_t numPoints, Rect* rect)
-{
-	// TODO: SIMD
-	JX_CHECK(numPoints >= 1, "Invalid number of points");
-
-	rect->m_MinX = points[0];
-	rect->m_MinY = points[1];
-	rect->m_MaxX = points[0];
-	rect->m_MaxY = points[1];
-	points += 2;
-
-	for (uint32_t i = 1; i < numPoints; ++i) {
-		rectExpandToInclude(rect, points[0], points[1]);
-		points += 2;
-	}
-}
 #else // !JX_CONFIG_MATH_SIMD
 void rectAoSToSoA(const Rect* aos, uint32_t numRects, RectSoA* soa)
 {
@@ -543,13 +528,34 @@ void rectSoAToAoS(const RectSoA* soa, uint32_t numRects, Rect* aos)
 	}
 }
 
-void rectIntersect(const RectSoA* soa, uint32_t numRects, const Rect* test, bool* results)
-{
-#error "Not implemented yet"
-}
 void rectIntersectBitset(const RectSoA* soa, uint32_t numRects, const Rect* test, uint8_t* bitset)
 {
-#error "Not implemented yet"
+	const float* minx = soa->m_MinX;
+	const float* miny = soa->m_MinY;
+	const float* maxx = soa->m_MaxX;
+	const float* maxy = soa->m_MaxY;
+
+	for (uint32_t i = 0; i < numRects;) {
+		uint8_t bitfield = 0;
+
+		for (uint32_t j = 0; j < 8 && i < numRects; ++j, ++i) {
+			if ((minx[0] > test->m_MaxX) ||
+				(miny[0] > test->m_MaxY) ||
+				(maxx[0] < test->m_MinX) ||
+				(maxy[0] < test->m_MinY)) 
+			{
+				bitfield |= (uint8_t)(1 << j);
+			}
+
+			++minx;
+			++miny;
+			++maxx;
+			++maxy;
+		}
+
+		bitset[0] = ~bitfield;
+		++bitset;
+	}
 }
 #endif
 
@@ -605,5 +611,22 @@ bool rectLineSegmentIntersection(const Rect* rect, const jx::Vec2& s, const jx::
 	}
 
 	return true;
+}
+
+void rectCalcFromPointList(const float* points, uint32_t numPoints, Rect* rect)
+{
+	// TODO: SIMD
+	JX_CHECK(numPoints >= 1, "Invalid number of points");
+
+	rect->m_MinX = points[0];
+	rect->m_MinY = points[1];
+	rect->m_MaxX = points[0];
+	rect->m_MaxY = points[1];
+	points += 2;
+
+	for (uint32_t i = 1; i < numPoints; ++i) {
+		rectExpandToInclude(rect, points[0], points[1]);
+		points += 2;
+	}
 }
 }

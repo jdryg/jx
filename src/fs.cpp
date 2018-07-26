@@ -1,5 +1,6 @@
 #include <jx/fs.h>
 #include <bx/platform.h>
+#include <bx/uint32_t.h>
 
 namespace jx
 {
@@ -53,5 +54,23 @@ void fsSplitPath(const char* path, char* drive, char* directory, char* filename,
 		}
 	}
 #endif
+}
+
+void fsConvertStringToFilename(const char* name, char* filename, uint32_t maxLen)
+{
+	const bx::StringView svIllegalChars("\\/:*?\"<>|");
+
+	const uint32_t nameLen = (uint32_t)bx::strLen(name);
+	const uint32_t len = bx::uint32_min(nameLen, maxLen - 1);
+
+	char* dst = filename;
+	for (uint32_t i = 0; i < nameLen; ++i) {
+		if (bx::strFind(svIllegalChars, name[i]) == nullptr) {
+			*dst++ = name[i];
+		} else {
+			*dst++ = '_';
+		}
+	}
+	*dst = '\0';
 }
 }

@@ -5,13 +5,19 @@
 #include <bx/mutex.h>
 #include <time.h>
 
+#if BX_PLATFORM_EMSCRIPTEN
+#include <stdio.h>
+#endif
+
 namespace jx
 {
 struct Logger
 {
 	File* m_File;
 	uint32_t m_Flags;
+#if BX_CONFIG_SUPPORTS_THREADING
 	bx::Mutex* m_Mutex;
+#endif
 };
 
 Logger* createLog(const char* name, uint32_t flags)
@@ -24,6 +30,7 @@ Logger* createLog(const char* name, uint32_t flags)
 	
 	bx::memSet(logger, 0, sizeof(Logger));
 
+#if BX_PLATFORM_WINDOWS || BX_PLATFORM_LINUX || BX_PLATFORM_OSX || BX_PLATFORM_RPI
 	char logFilename[256];
 	bx::snprintf(logFilename, 256, "%s.log", name);
 	logger->m_File = fsFileOpenWrite(BaseDir::UserData, logFilename);
@@ -32,29 +39,38 @@ Logger* createLog(const char* name, uint32_t flags)
 		JX_FREE(logger);
 		return nullptr;
 	}
+#else
+	logger->m_File = nullptr;
+#endif
 
 	logger->m_Flags = flags;
 
+#if BX_CONFIG_SUPPORTS_THREADING
 	if ((flags & LoggerFlags::Multithreaded) != 0) {
 		logger->m_Mutex = JX_NEW(bx::Mutex)();
 	} else {
 		logger->m_Mutex = nullptr;
 	}
+#endif
 
 	return logger;
 }
 
 void destroyLog(Logger* logger)
 {
+#if BX_PLATFORM_WINDOWS || BX_PLATFORM_LINUX || BX_PLATFORM_OSX || BX_PLATFORM_RPI
 	if (logger->m_File) {
 		fsFileClose(logger->m_File);
 		logger->m_File = nullptr;
 	}
+#endif
 
+#if BX_CONFIG_SUPPORTS_THREADING
 	if (logger->m_Mutex) {
 		JX_DELETE(logger->m_Mutex);
 		logger->m_Mutex = nullptr;
 	}
+#endif
 
 	JX_FREE(logger);
 }
@@ -68,11 +84,14 @@ void logf(Logger* logger, LogLevel::Enum level, const char* fmt, ...)
 
 	const bool forceFlush = (logger->m_Flags & LoggerFlags::FlushOnEveryLog) != 0;
 	const bool appendTimestamp = (logger->m_Flags & LoggerFlags::AppendTimestamp) != 0;
+
+#if BX_CONFIG_SUPPORTS_THREADING
 	const bool multithreaded = (logger->m_Flags & LoggerFlags::Multithreaded) != 0;
 
 	if (multithreaded) {
 		logger->m_Mutex->lock();
 	}
+#endif
 
 	va_list ap;
 	va_start(ap, fmt);
@@ -88,6 +107,7 @@ void logf(Logger* logger, LogLevel::Enum level, const char* fmt, ...)
 	default: break;
 	}
 
+#if BX_PLATFORM_WINDOWS || BX_PLATFORM_LINUX || BX_PLATFORM_OSX || BX_PLATFORM_RPI
 	if (levelSymbol) {
 		fsFileWriteBytes(logger->m_File, levelSymbol, 4);
 	}
@@ -107,9 +127,28 @@ void logf(Logger* logger, LogLevel::Enum level, const char* fmt, ...)
 	if (forceFlush) {
 		// TODO: fflush?
 	}
+#else
+	if (levelSymbol) {
+		printf("%s", levelSymbol);
+	}
 
+	if (appendTimestamp) {
+		char timestamp[128];
+		time_t rawtime;
+		time(&rawtime);
+		struct tm* timeinfo = localtime(&rawtime);
+		strftime(timestamp, BX_COUNTOF(timestamp), "%Y-%m-%d %H:%M:%S ", timeinfo);
+
+		printf("%s", timestamp);
+	}
+
+	printf("%s\n", logLine);
+#endif
+
+#if BX_CONFIG_SUPPORTS_THREADING
 	if (multithreaded) {
 		logger->m_Mutex->unlock();
 	}
+#endif
 }
 }

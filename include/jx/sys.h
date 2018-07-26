@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #ifndef JX_CONFIG_DEBUG
-#	define JX_CONFIG_DEBUG _DEBUG
+#	define JX_CONFIG_DEBUG 0
 #endif
 
 #ifndef JX_CONFIG_TRACE_ALLOCATIONS

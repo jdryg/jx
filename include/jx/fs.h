@@ -32,6 +32,7 @@ typedef jtl::delegate<void(const char* relPath, bool isFile)> EnumerateFilesCall
 
 bool fsInit(const char* appName);
 void fsShutdown();
+bool fsIsReady();
 
 File* fsFileOpenRead(BaseDir::Enum baseDir, const char* relPath);
 File* fsFileOpenWrite(BaseDir::Enum baseDir, const char* relPath);

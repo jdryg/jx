@@ -83,7 +83,9 @@ bool memTracerInit(bx::AllocatorI* allocator)
 	bx::memSet(mt, 0, sizeof(MemTracer));
 
 	mt->m_Allocator = allocator;
+#if BX_CONFIG_SUPPORTS_THREADING
 	mt->m_Mutex = BX_NEW(allocator, bx::Mutex)();
+#endif
 	mt->m_AllocInfoPool = createObjectPool(sizeof(AllocationInfo), 2048, allocator);
 
 #if BX_PLATFORM_WINDOWS
@@ -126,7 +128,9 @@ void memTracerShutdown()
 	}
 
 	destroyObjectPool(s_MemTracer->m_AllocInfoPool);
+#if BX_CONFIG_SUPPORTS_THREADING
 	BX_DELETE(allocator, s_MemTracer->m_Mutex);
+#endif
 	
 	BX_FREE(allocator, s_MemTracer);
 	s_MemTracer = nullptr;

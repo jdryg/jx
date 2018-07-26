@@ -2,6 +2,7 @@
 #define JX_MEMORY_TRACER_H
 
 #include <stdint.h>
+#include <stddef.h> // size_t
 
 namespace bx
 {

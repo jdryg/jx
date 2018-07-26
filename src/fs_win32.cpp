@@ -83,6 +83,11 @@ void fsShutdown()
 	s_FS = nullptr;
 }
 
+bool fsIsReady()
+{
+	return s_FS != nullptr;
+}
+
 File* fsFileOpenRead(BaseDir::Enum baseDir, const char* relPath)
 {
 	bool setcwdResult = setCurrentDirectory(baseDir);
@@ -185,6 +190,7 @@ void fsFileSeek(File* f, int offset, SeekOrigin::Enum origin)
 	DWORD moveMethod = origin == SeekOrigin::Begin ? FILE_BEGIN : (origin == SeekOrigin::Current ? FILE_CURRENT : FILE_END);
 	DWORD result = ::SetFilePointer(f->m_Handle, offset, NULL, moveMethod);
 	JX_CHECK(result != INVALID_SET_FILE_POINTER, "SetFilePointer failed");
+	BX_UNUSED(result); // for release mode
 }
 
 bool fsFileRemove(BaseDir::Enum baseDir, const char* relPath)
@@ -279,25 +285,6 @@ bool fsEnumerateFiles(BaseDir::Enum baseDir, const char* relPath, EnumerateFiles
 	::FindClose(hFind);
 
 	return dwError == ERROR_NO_MORE_FILES;
-}
-
-// TODO: Move to fs.cpp?
-void fsConvertStringToFilename(const char* name, char* filename, uint32_t maxLen)
-{
-	const bx::StringView svIllegalChars("\\/:*?\"<>|");
-
-	const uint32_t nameLen = (uint32_t)bx::strLen(name);
-	const uint32_t len = bx::uint32_min(nameLen, maxLen - 1);
-
-	char* dst = filename;
-	for (uint32_t i = 0; i < nameLen; ++i) {
-		if (bx::strFind(svIllegalChars, name[i]) == nullptr) {
-			*dst++ = name[i];
-		} else {
-			*dst++ = '_';
-		}
-	}
-	*dst = '\0';
 }
 
 //////////////////////////////////////////////////////////////////////////
