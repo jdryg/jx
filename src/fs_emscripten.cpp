@@ -1,6 +1,4 @@
 #include <jx/fs.h>
-#include <jx/sys.h>
-#include <jx/logger.h>
 #include <jx/allocator.h>
 #include <bx/bx.h>
 #include <stdio.h>
@@ -21,7 +19,6 @@ bool fsInit(const char* appName)
 {
 	BX_UNUSED(appName);
 
-	JX_LOG_DEBUG("fsInit()");
 	EM_ASM(
 		console.log("Creating and mounting IDBFS");
 		FS.mkdir('/IDBFS');
@@ -52,27 +49,33 @@ bool fsIsReady()
 
 File* fsFileOpenRead(BaseDir::Enum baseDir, const char* relPath)
 {
-	JX_LOG_DEBUG("fsFileOpenRead(%d, \"%s\")", baseDir, relPath);
-	
-	File* f = nullptr;
+	FILE* handle = nullptr;
 	if (baseDir == BaseDir::Install) {
-		f = (File*)JX_ALLOC(sizeof(File));
-		f->m_Handle = fopen(relPath, "rb");
-	} 
+		handle = fopen(relPath, "rb");
+	}
+
+	if (!handle) {
+		return nullptr;
+	}
+
+	File* f = (File*)JX_ALLOC(sizeof(File));
+	if (!f) {
+		fclose(handle);
+		return nullptr;
+	}
+
+	f->m_Handle = handle;
 
 	return f;
 }
 
 File* fsFileOpenWrite(BaseDir::Enum baseDir, const char* relPath)
 {
-	JX_LOG_DEBUG("fsFileOpenWrite(%d, \"%s\")", baseDir, relPath);
-
 	return nullptr;
 }
 
 void fsFileClose(File* f)
 {
-	JX_LOG_DEBUG("fsFileClose()");
 	if (f->m_Handle) {
 		fclose(f->m_Handle);
 		f->m_Handle = nullptr;
@@ -108,8 +111,6 @@ void fsFileSeek(File* f, int offset, SeekOrigin::Enum origin)
 
 bool fsFileRemove(BaseDir::Enum baseDir, const char* relPath)
 {
-	JX_LOG_DEBUG("fsFileRemove(%d, \"%s\")", baseDir, relPath);
-
 	return false;
 }
 

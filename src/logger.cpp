@@ -40,6 +40,7 @@ Logger* createLog(const char* name, uint32_t flags)
 		return nullptr;
 	}
 #else
+	BX_UNUSED(name);
 	logger->m_File = nullptr;
 #endif
 
@@ -78,7 +79,9 @@ void destroyLog(Logger* logger)
 void logf(Logger* logger, LogLevel::Enum level, const char* fmt, ...)
 {
 	JX_CHECK(logger != nullptr, "Null logger passed");
+#if BX_PLATFORM_WINDOWS || BX_PLATFORM_LINUX || BX_PLATFORM_OSX || BX_PLATFORM_RPI
 	JX_CHECK(logger->m_File != nullptr, "Logger doesn't have a valid file handle");
+#endif
 
 	static char logLine[2048];
 
@@ -128,6 +131,9 @@ void logf(Logger* logger, LogLevel::Enum level, const char* fmt, ...)
 		// TODO: fflush?
 	}
 #else
+	BX_UNUSED(logLineLen);
+	BX_UNUSED(forceFlush);
+
 	if (levelSymbol) {
 		printf("%s", levelSymbol);
 	}
@@ -142,7 +148,7 @@ void logf(Logger* logger, LogLevel::Enum level, const char* fmt, ...)
 		printf("%s", timestamp);
 	}
 
-	printf("%s\n", logLine);
+	printf("%s", logLine);
 #endif
 
 #if BX_CONFIG_SUPPORTS_THREADING

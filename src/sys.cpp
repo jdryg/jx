@@ -243,7 +243,7 @@ bool getOSFriendlyName(char* str, uint32_t maxLen)
 // Internal
 static bx::AllocatorI* getSystemAllocator()
 {
-	static char _AllocatorBuffer[sizeof(bx::DefaultAllocator)];
+	static BX_ALIGN_DECL(16, char) _AllocatorBuffer[sizeof(bx::DefaultAllocator)];
 	static bx::AllocatorI* systemAllocator = BX_PLACEMENT_NEW(_AllocatorBuffer, bx::DefaultAllocator)();
 
 	return systemAllocator;
