@@ -2,8 +2,6 @@
 #include <jx/sys.h>
 #include <bx/allocator.h>
 
-#define HANDLE_CAPACITY_DELTA 1024
-
 namespace jx
 {
 struct FreeListNode
@@ -19,12 +17,13 @@ struct HandleAlloc32
 	bx::AllocatorI* m_Allocator;
 	FreeListNode* m_FreeList;
 	uint32_t m_HandleCapacity;
+	uint32_t m_CapacityDelta;
 };
 
 static void removeFreeListNode(HandleAlloc32* ha, FreeListNode* node);
 static void insertFreeListNode(HandleAlloc32* ha, FreeListNode* newNode);
 
-HandleAlloc32* createHandleAlloc32(bx::AllocatorI* allocator)
+HandleAlloc32* createHandleAlloc32(bx::AllocatorI* allocator, uint32_t capacityDelta)
 {
 	HandleAlloc32* ha = (HandleAlloc32*)BX_ALLOC(allocator, sizeof(HandleAlloc32));
 	if (!ha) {
@@ -33,6 +32,7 @@ HandleAlloc32* createHandleAlloc32(bx::AllocatorI* allocator)
 
 	bx::memSet(ha, 0, sizeof(HandleAlloc32));
 	ha->m_Allocator = allocator;
+	ha->m_CapacityDelta = capacityDelta;
 
 	return ha;
 }
@@ -84,10 +84,10 @@ uint32_t ha32AllocHandles(HandleAlloc32* ha, uint32_t n)
 
 	FreeListNode* newNode = (FreeListNode*)BX_ALLOC(ha->m_Allocator, sizeof(FreeListNode));
 	newNode->m_FirstHandleID = ha->m_HandleCapacity + n;
-	newNode->m_NumFreeHandles = HANDLE_CAPACITY_DELTA - n;
+	newNode->m_NumFreeHandles = ha->m_CapacityDelta - n;
 	newNode->m_Next = nullptr;
 	newNode->m_Prev = nullptr;
-	ha->m_HandleCapacity += HANDLE_CAPACITY_DELTA;
+	ha->m_HandleCapacity += ha->m_CapacityDelta;
 
 	insertFreeListNode(ha, newNode);
 

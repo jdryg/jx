@@ -2,6 +2,7 @@
 #include <jx/rand.h>
 #include <jx/fs.h>
 #include <jx/logger.h>
+#include <jx/stack_allocator.h>
 #include <bx/allocator.h>
 #include <chrono>
 
@@ -25,6 +26,7 @@ struct Context
 {
 	bx::AllocatorI* m_SystemAllocator;
 	bx::AllocatorI* m_GlobalAllocator;
+	bx::AllocatorI* m_FrameAllocator;
 	Logger* m_Logger;
 };
 
@@ -54,6 +56,10 @@ bool initSystem(const char* appName)
 	s_Context->m_SystemAllocator = systemAllocator;
 	s_Context->m_GlobalAllocator = createAllocator("Global");
 
+	// Initialize temporary/frame allocator
+	void* buffer = BX_ALLOC(systemAllocator, JX_CONFIG_FRAME_ALLOCATOR_CAPACITY);
+	s_Context->m_FrameAllocator = BX_NEW(systemAllocator, StackAllocator)(buffer, JX_CONFIG_FRAME_ALLOCATOR_CAPACITY);
+	
 	// Initialize the filesystem
 	if (!fsInit(appName)) {
 		JX_CHECK(false, "Failed to initialize file system");
@@ -119,8 +125,12 @@ void destroyAllocator(bx::AllocatorI* allocator)
 
 bx::AllocatorI* getGlobalAllocator()
 {
-	Context* ctx = s_Context;
-	return ctx->m_GlobalAllocator;
+	return s_Context->m_GlobalAllocator;
+}
+
+bx::AllocatorI* getFrameAllocator()
+{
+	return s_Context->m_FrameAllocator;
 }
 
 Logger* getGlobalLogger()

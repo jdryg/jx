@@ -12,7 +12,7 @@ namespace jx
 {
 struct HandleAlloc32;
 
-HandleAlloc32* createHandleAlloc32(bx::AllocatorI* allocator);
+HandleAlloc32* createHandleAlloc32(bx::AllocatorI* allocator, uint32_t capacityDelta);
 void destroyHandleAlloc32(HandleAlloc32* ha);
 
 uint32_t ha32AllocHandles(HandleAlloc32* ha, uint32_t n);

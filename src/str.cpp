@@ -1,24 +1,35 @@
 #include <jx/str.h>
-#include <jx/allocator.h>
+#include <jx/sys.h>
+#include <bx/allocator.h>
 #include <bx/string.h>
 #include <bx/uint32_t.h>
 
 namespace jx
 {
-char* strDup(const char* str, uint32_t len)
+char* strDup(bx::AllocatorI* allocator, const char* str, uint32_t len)
 {
 	len = len == UINT32_MAX ? (uint32_t)bx::strLen(str) : len;
 
-	char* cpy = (char*)JX_ALLOC(sizeof(char) * (len + 1));
+	char* cpy = (char*)BX_ALLOC(allocator, sizeof(char) * (len + 1));
 	bx::memCopy(cpy, str, sizeof(char) * len);
 	cpy[len] = '\0';
 
 	return cpy;
 }
 
+void strFree(bx::AllocatorI* allocator, char* str)
+{
+	BX_FREE(allocator, str);
+}
+
+char* strDup(const char* str, uint32_t len)
+{
+	return strDup(getGlobalAllocator(), str, len);
+}
+
 void strFree(char* str)
 {
-	JX_FREE(str);
+	strFree(getGlobalAllocator(), str);
 }
 
 char* strReplace(const char* str, uint32_t len, const char* from, const char* to)
@@ -42,7 +53,8 @@ char* strReplace(const char* str, uint32_t len, const char* from, const char* to
 	// At least one match. Predict the size of the new string based on the sizes of from and to...
 	size_t dstCapacity = (fromLen >= toLen) ? len : len + (toLen - fromLen) * 4;
 
-	char* finalString = (char*)JX_ALLOC(sizeof(char) * (dstCapacity + 1));
+	bx::AllocatorI* allocator = getGlobalAllocator();
+	char* finalString = (char*)BX_ALLOC(allocator, sizeof(char) * (dstCapacity + 1));
 
 	const char* src = str;
 	char* dst = finalString;
@@ -62,7 +74,7 @@ char* strReplace(const char* str, uint32_t len, const char* from, const char* to
 		// Check if there's enough space from the substring...
 		if (curPos + matchRelPos + toLen >= dstCapacity) {
 			dstCapacity = bx::uint32_max((uint32_t)((dstCapacity * 3) >> 1), (uint32_t)(curPos + matchRelPos + toLen));
-			finalString = (char*)JX_REALLOC(finalString, sizeof(char) * (dstCapacity + 1));
+			finalString = (char*)BX_REALLOC(allocator, finalString, sizeof(char) * (dstCapacity + 1));
 			dst = finalString + curPos;
 		}
 

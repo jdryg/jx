@@ -31,4 +31,10 @@ inline uint32_t log2ui(uint32_t v)
 
 	return r;
 }
+
+inline float snapTo(float x, float stepSize)
+{
+	int ix = (int)bx::round(x / stepSize);
+	return ix * stepSize;
+}
 }

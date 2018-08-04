@@ -15,6 +15,10 @@
 #	define JX_CONFIG_MATH_SIMD 1
 #endif
 
+#ifndef JX_CONFIG_FRAME_ALLOCATOR_CAPACITY
+#	define JX_CONFIG_FRAME_ALLOCATOR_CAPACITY (4 << 20)
+#endif
+
 #if JX_CONFIG_DEBUG
 #include <bx/debug.h>
 
@@ -61,6 +65,7 @@ bx::AllocatorI* createAllocator(const char* name);
 void destroyAllocator(bx::AllocatorI* allocator);
 
 bx::AllocatorI* getGlobalAllocator();
+bx::AllocatorI* getFrameAllocator();
 Logger* getGlobalLogger();
 
 void getCPUBrandString(char* str, uint32_t maxLen);

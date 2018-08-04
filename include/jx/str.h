@@ -3,6 +3,11 @@
 
 #include <stdint.h>
 
+namespace bx
+{
+struct AllocatorI;
+}
+
 namespace jx
 {
 char* strDup(const char* str, uint32_t len = UINT32_MAX);
@@ -12,6 +17,9 @@ bool strEllipsize(char* str, uint32_t maxLen);
 
 int strCmpIN(const char* str1, const char* str2, uint32_t len);
 int strCmpI(const char* str1, const char* str2);
+
+char* strDup(bx::AllocatorI* allocator, const char* str, uint32_t len = UINT32_MAX);
+void strFree(bx::AllocatorI* allocator, char* str);
 }
 
 #endif
