@@ -70,6 +70,12 @@ Logger* getGlobalLogger();
 
 void getCPUBrandString(char* str, uint32_t maxLen);
 bool getOSFriendlyName(char* str, uint32_t maxLen);
+
+#if JX_CONFIG_TRACE_ALLOCATIONS
+uint32_t memTracerGetNumAllocators();
+const char* memTracerGetAllocatorName(uint32_t id);
+size_t memTracerGetTotalAllocatedMemory(uint32_t id);
+#endif
 }
 
 #define JX_LOG_DEBUG(fmt, ...)   jx::logf(jx::getGlobalLogger(), jx::LogLevel::Debug, fmt, ##__VA_ARGS__)

@@ -89,7 +89,14 @@ bool memTracerInit(bx::AllocatorI* allocator)
 	mt->m_AllocInfoPool = createObjectPool(sizeof(AllocationInfo), 2048, allocator);
 
 #if BX_PLATFORM_WINDOWS
-	mt->m_hDbgHelpDll = LoadLibraryA("dbghelp.dll");
+	char filename[256];
+	GetModuleFileNameA(NULL, &filename[0], BX_COUNTOF(filename));
+	char* lastSlash = strrchr(filename, '\\');
+	*lastSlash = NULL;
+
+	char dbgHelpFilename[256];
+	bx::snprintf(dbgHelpFilename, BX_COUNTOF(dbgHelpFilename), "%s\\dbghelp.dll", filename);
+	mt->m_hDbgHelpDll = LoadLibraryA(dbgHelpFilename);
 
 	mt->SymCleanup = (tSC)GetProcAddress(mt->m_hDbgHelpDll, "SymCleanup");
 	mt->SymFunctionTableAccess64 = (tSFTA)GetProcAddress(mt->m_hDbgHelpDll, "SymFunctionTableAccess64");
@@ -314,43 +321,27 @@ static AllocationInfo* findAllocation(AllocatorInfo* ai, const void* ptr)
 void getStackTrace(uint64_t* stack, uint32_t size)
 {
 	JX_CHECK(s_MemTracer != nullptr, "Memory tracer hasn't been initialized");
-
-#if 0
-	MemTracer* ctx = s_MemTracer;
-
-	DWORD machine = IMAGE_FILE_MACHINE_AMD64;
-	HANDLE process = GetCurrentProcess();
-	HANDLE thread = GetCurrentThread();
-
-	CONTEXT context = {};
-	context.ContextFlags = CONTEXT_FULL;
-	RtlCaptureContext(&context);
-
-	STACKFRAME frame = {};
-	frame.AddrPC.Offset = context.Rip;
-	frame.AddrPC.Mode = AddrModeFlat;
-	frame.AddrFrame.Offset = context.Rbp;
-	frame.AddrFrame.Mode = AddrModeFlat;
-	frame.AddrStack.Offset = context.Rsp;
-	frame.AddrStack.Mode = AddrModeFlat;
-
-	int frameID = -2;
-	while (ctx->StackWalk64(machine, process, thread, &frame, &context, NULL, ctx->SymFunctionTableAccess64, ctx->SymGetModuleBase64, NULL)) {
-		if (frameID < 0) {
-			++frameID;
-			continue;
-		}
-
-		stack[frameID] = frame.AddrPC.Offset;
-
-		++frameID;
-		if (frameID == (int)size) {
-			break;
-		}
-	}
-#else
 	RtlCaptureStackBackTrace(2, size, (PVOID*)stack, NULL);
-#endif
 }
-#endif
+#endif // BX_PLATFORM_WINDOWS
+
+#if JX_CONFIG_TRACE_ALLOCATIONS
+uint32_t memTracerGetNumAllocators()
+{
+	JX_CHECK(s_MemTracer != nullptr, "Memory tracer hasn't been initialized");
+	return s_MemTracer->m_NumAllocators;
+}
+
+const char* memTracerGetAllocatorName(uint32_t id)
+{
+	JX_CHECK(s_MemTracer != nullptr, "Memory tracer hasn't been initialized");
+	return s_MemTracer->m_Allocators[id].m_Name;
+}
+
+size_t memTracerGetTotalAllocatedMemory(uint32_t id)
+{
+	JX_CHECK(s_MemTracer != nullptr, "Memory tracer hasn't been initialized");
+	return s_MemTracer->m_Allocators[id].m_TotalAllocatedMemory;
+}
+#endif // JX_CONFIG_TRACE_ALLOCATIONS
 }

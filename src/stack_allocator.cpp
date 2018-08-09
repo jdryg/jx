@@ -1,6 +1,5 @@
 #include <jx/stack_allocator.h>
 #include <jx/sys.h>
-#include <bx/uint32_t.h>
 
 namespace jx
 {
@@ -35,7 +34,7 @@ void* StackAllocator::realloc(void* _ptr, size_t _size, size_t _align, const cha
 	JX_CHECK(!_ptr || (_ptr && !_size), "StackAllocator doesn't support reallocations");
 	JX_CHECK(!_ptr || (_ptr && _ptr >= m_Buffer && _ptr < m_Buffer + m_Size), "Invalid pointer passed to StackAllocator");
 
-	_align = bx::uint32_max(_align, 8);
+	_align = bx::max<size_t>(_align, (size_t)8);
 
 	if (_ptr) {
 		if (_size) {
