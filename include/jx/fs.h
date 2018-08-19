@@ -34,6 +34,10 @@ bool fsInit(const char* appName);
 void fsShutdown();
 bool fsIsReady();
 
+#if BX_PLATFORM_WINDOWS
+const wchar_t* fsGetBaseDirPath(BaseDir::Enum baseDir);
+#endif
+
 File* fsFileOpenRead(BaseDir::Enum baseDir, const char* relPath);
 File* fsFileOpenWrite(BaseDir::Enum baseDir, const char* relPath);
 void fsFileClose(File* f);

@@ -250,6 +250,17 @@ bool getOSFriendlyName(char* str, uint32_t maxLen)
 	return true;
 }
 
+#if BX_PLATFORM_WINDOWS
+void getLogFullPathW(Logger* logger, wchar_t* path, uint32_t maxLen)
+{
+	const char* loggerName = loggerGetName(logger);
+	wchar_t nameW[256];
+	mbstowcs(nameW, loggerName, BX_COUNTOF(nameW));
+
+	swprintf(path, maxLen, L"%s%s.log", fsGetBaseDirPath(BaseDir::UserData), nameW);
+}
+#endif
+
 // Internal
 static bx::AllocatorI* getSystemAllocator()
 {

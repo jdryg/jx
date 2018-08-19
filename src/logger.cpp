@@ -1,6 +1,7 @@
 #include <jx/logger.h>
 #include <jx/fs.h>
 #include <jx/allocator.h>
+#include <jx/str.h>
 #include <bx/string.h>
 #include <bx/mutex.h>
 #include <time.h>
@@ -13,6 +14,7 @@ namespace jx
 {
 struct Logger
 {
+	char* m_Name;
 	File* m_File;
 	uint32_t m_Flags;
 #if BX_CONFIG_SUPPORTS_THREADING
@@ -29,6 +31,8 @@ Logger* createLog(const char* name, uint32_t flags)
 	}
 	
 	bx::memSet(logger, 0, sizeof(Logger));
+
+	logger->m_Name = jx::strDup(name);
 
 #if BX_PLATFORM_WINDOWS || BX_PLATFORM_LINUX || BX_PLATFORM_OSX || BX_PLATFORM_RPI
 	char logFilename[256];
@@ -74,6 +78,11 @@ void destroyLog(Logger* logger)
 #endif
 
 	JX_FREE(logger);
+}
+
+const char* loggerGetName(Logger* logger)
+{
+	return logger->m_Name;
 }
 
 void logf(Logger* logger, LogLevel::Enum level, const char* fmt, ...)

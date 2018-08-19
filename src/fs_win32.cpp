@@ -287,6 +287,16 @@ bool fsEnumerateFiles(BaseDir::Enum baseDir, const char* relPath, EnumerateFiles
 	return dwError == ERROR_NO_MORE_FILES;
 }
 
+const wchar_t* fsGetBaseDirPath(BaseDir::Enum baseDir)
+{
+	switch (baseDir) {
+	case BaseDir::Install:  return s_FS->m_InstallFolder;
+	case BaseDir::UserData: return s_FS->m_UserDataFolder;
+	}
+
+	return nullptr;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Internal
 //

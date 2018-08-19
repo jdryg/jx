@@ -8,7 +8,7 @@
 #endif
 
 #ifndef JX_CONFIG_TRACE_ALLOCATIONS
-#	define JX_CONFIG_TRACE_ALLOCATIONS 0
+#	define JX_CONFIG_TRACE_ALLOCATIONS 1
 #endif
 
 #ifndef JX_CONFIG_MATH_SIMD
@@ -67,6 +67,10 @@ void destroyAllocator(bx::AllocatorI* allocator);
 bx::AllocatorI* getGlobalAllocator();
 bx::AllocatorI* getFrameAllocator();
 Logger* getGlobalLogger();
+
+#if BX_PLATFORM_WINDOWS
+void getLogFullPathW(Logger* logger, wchar_t* path, uint32_t maxLen);
+#endif
 
 void getCPUBrandString(char* str, uint32_t maxLen);
 bool getOSFriendlyName(char* str, uint32_t maxLen);

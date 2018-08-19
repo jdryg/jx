@@ -31,6 +31,8 @@ struct LoggerFlags
 Logger* createLog(const char* name, uint32_t flags);
 void destroyLog(Logger* logger);
 
+const char* loggerGetName(Logger* logger);
+
 void logf(Logger* logger, LogLevel::Enum level, const char* fmt, ...);
 }
 
