@@ -77,6 +77,8 @@ void destroyLog(Logger* logger)
 	}
 #endif
 
+	jx::strFree(logger->m_Name);
+
 	JX_FREE(logger);
 }
 

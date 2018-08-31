@@ -6,11 +6,10 @@ namespace jx
 {
 BitSet* createBitSet(bx::AllocatorI* allocator, uint32_t numBits)
 {
-	const uint32_t memSize = bitSetCalcMemorySize(numBits);
-	uint8_t* mem = (uint8_t*)BX_ALLOC(allocator, sizeof(BitSet) + memSize);
+	BitSet* bs = (BitSet*)BX_ALLOC(allocator, sizeof(BitSet));
 
-	BitSet* bs = (BitSet*)mem;
-	bs->m_Bits = (uint64_t*)(mem + sizeof(BitSet));
+	const uint32_t memSize = bitSetCalcMemorySize(numBits);
+	bs->m_Bits = (uint64_t*)BX_ALIGNED_ALLOC(allocator, memSize, 16);
 	bs->m_Size = memSize / sizeof(uint64_t);
 
 	return bs;
@@ -18,7 +17,21 @@ BitSet* createBitSet(bx::AllocatorI* allocator, uint32_t numBits)
 
 void destroyBitSet(bx::AllocatorI* allocator, BitSet* bs)
 {
+	BX_ALIGNED_FREE(allocator, bs->m_Bits, 16);
 	BX_FREE(allocator, bs);
+}
+
+void resizeBitSet(bx::AllocatorI* allocator, BitSet* bs, uint32_t numBits)
+{
+	const uint32_t oldMemSize = sizeof(uint64_t) * bs->m_Size;
+	const uint32_t memSize = bitSetCalcMemorySize(numBits);
+	if (memSize <= oldMemSize) {
+		return;
+	}
+
+	bs->m_Bits = (uint64_t*)BX_ALIGNED_REALLOC(allocator, bs->m_Bits, memSize, 16);
+	bx::memSet((uint8_t*)bs->m_Bits + oldMemSize, 0, memSize - oldMemSize);
+	bs->m_Size = memSize / sizeof(uint64_t);
 }
 
 void makeBitSet(BitSet* bs, uint64_t* mem, uint32_t numBits)
