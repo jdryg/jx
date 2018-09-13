@@ -21,14 +21,14 @@ inline void fsFileReadString(File* f, char* str, uint32_t maxLen)
 	}
 }
 
-inline void fsFileWriteString(File* f, const char* str)
+inline bool fsFileWriteString(File* f, const char* str)
 {
 	const uint32_t len = bx::strLen(str);
 	if (!fsFileWrite<uint32_t>(f, len)) {
-		return;
+		return false;
 	}
 
-	fsFileWriteBytes(f, str, len);
+	return fsFileWriteBytes(f, str, len) == len;
 }
 
 template<typename T>

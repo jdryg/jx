@@ -55,7 +55,7 @@ bool fsEnumerateFiles(BaseDir::Enum baseDir, const char* relPath, EnumerateFiles
 void fsConvertStringToFilename(const char* name, char* filename, uint32_t maxLen);
 
 void fsFileReadString(File* f, char* str, uint32_t maxLen);
-void fsFileWriteString(File* f, const char* str);
+bool fsFileWriteString(File* f, const char* str);
 
 template<typename T> T fsFileRead(File* f);
 template<> jtl::string fsFileRead(File* f);
