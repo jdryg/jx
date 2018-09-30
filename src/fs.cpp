@@ -73,4 +73,25 @@ void fsConvertStringToFilename(const char* name, char* filename, uint32_t maxLen
 	}
 	*dst = '\0';
 }
+
+char* fsLoadTextFile(BaseDir::Enum baseDir, const char* relPath, bx::AllocatorI* allocator)
+{
+	File* f = fsFileOpenRead(baseDir, relPath);
+	if (!f) {
+		return nullptr;
+	}
+
+	const uint64_t size = fsFileGetSize(f);
+	char* buffer = (char*)BX_ALLOC(allocator, size + 1);
+	if (!buffer) {
+		fsFileClose(f);
+		return nullptr;
+	}
+	fsFileReadBytes(f, buffer, size);
+	buffer[size] = '\0';
+
+	fsFileClose(f);
+
+	return buffer;
+}
 }

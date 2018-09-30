@@ -63,6 +63,8 @@ template<typename T> bool fsFileWrite(File* f, T val);
 bool fsFileWrite(File* f, const char* str);
 
 void fsSplitPath(const char* path, char* drive, char* dir, char* filename, char* ext);
+
+char* fsLoadTextFile(BaseDir::Enum baseDir, const char* relPath, bx::AllocatorI* allocator);
 }
 
 #include "inline/fs.inl"
