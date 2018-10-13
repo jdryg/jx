@@ -198,7 +198,8 @@ bool fsCreateFolderTree(BaseDir::Enum baseDir, const char* relPath)
 			return false;
 		}
 #else
-		mkdir(partialPath, S_IRWXU);
+		const int res = mkdir(partialPath, S_IRWXU);
+		JX_LOG_DEBUG("mkdir(\"%s\", S_IRWXU) = %d\n", partialPath, res);
 #endif
 
 		slash = strchr(slash + 1, '/');
@@ -211,7 +212,8 @@ bool fsCreateFolderTree(BaseDir::Enum baseDir, const char* relPath)
 		return false;
 	}
 #else
-	mkdir(relPath, S_IRWXU);
+	const int res = mkdir(relPath, S_IRWXU);
+	JX_LOG_DEBUG("mkdir(\"%s\", S_IRWXU) = %d\n", relPath, res);
 #endif
 
 	sync();
