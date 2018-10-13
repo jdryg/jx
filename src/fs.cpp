@@ -2,13 +2,17 @@
 #include <bx/platform.h>
 #include <bx/uint32_t.h>
 
+#if BX_PLATFORM_LINUX || BX_PLATFORM_OSX || BX_PLATFORM_RPI || BX_PLATFORM_EMSCRIPTEN
+#include <string.h>
+#endif
+
 namespace jx
 {
 void fsSplitPath(const char* path, char* drive, char* directory, char* filename, char* extension)
 {
 #if BX_PLATFORM_WINDOWS
 	_splitpath(path, drive, directory, filename, extension);
-#elif BX_PLATFORM_LINUX || BX_PLATFORM_OSX || BX_PLATFORM_RPI
+#elif BX_PLATFORM_LINUX || BX_PLATFORM_OSX || BX_PLATFORM_RPI || BX_PLATFORM_EMSCRIPTEN
 	if (drive) {
 		*drive = '\0';
 	}
@@ -17,7 +21,7 @@ void fsSplitPath(const char* path, char* drive, char* directory, char* filename,
 		const char* lastSlash = strrchr(path, '/');
 		if (lastSlash) {
 			size_t len = (size_t)(lastSlash - path);
-			memcpy(directory, path, len);
+			bx::memCopy(directory, path, len);
 			directory[len] = '\0';
 		} else {
 			*directory = '\0';
@@ -35,7 +39,7 @@ void fsSplitPath(const char* path, char* drive, char* directory, char* filename,
 		const char* dot = strrchr(path, '.');
 		if (dot && dot > lastSlash) {
 			size_t len = (size_t)(dot - lastSlash);
-			memcpy(filename, lastSlash, len);
+			bx::memCopy(filename, lastSlash, len);
 			filename[len] = '\0';
 		} else {
 			*filename = '\0';
@@ -47,12 +51,14 @@ void fsSplitPath(const char* path, char* drive, char* directory, char* filename,
 		const char* dot = strrchr(path, '.');
 		if (dot && dot > lastSlash) {
 			size_t len = (size_t)(strlen(path) - strlen(dot));
-			memcpy(extension, dot, len);
+			bx::memCopy(extension, dot, len);
 			extension[len] = '\0';
 		} else {
 			*extension = '\0';
 		}
 	}
+#else
+#error "Not implemented"
 #endif
 }
 
@@ -87,7 +93,7 @@ char* fsLoadTextFile(BaseDir::Enum baseDir, const char* relPath, bx::AllocatorI*
 		fsFileClose(f);
 		return nullptr;
 	}
-	fsFileReadBytes(f, buffer, size);
+	fsFileReadBytes(f, buffer, (uint32_t)size);
 	buffer[size] = '\0';
 
 	fsFileClose(f);
