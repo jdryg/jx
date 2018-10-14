@@ -71,7 +71,9 @@ struct MemTracer
 static MemTracer* s_MemTracer = nullptr;
 
 static AllocationInfo* findAllocation(AllocatorInfo* ai, const void* ptr);
+#if BX_PLATFORM_WINDOWS
 static void getStackTrace(uint64_t* stack, uint32_t size);
+#endif
 
 bool memTracerInit(bx::AllocatorI* allocator)
 {

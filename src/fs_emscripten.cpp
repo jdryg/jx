@@ -27,7 +27,6 @@ static void invalidateFileSystem();
 
 bool fsInit(const char* appName)
 {
-	JX_LOG_DEBUG("fsInit(\"%s\")\n", appName);
 	BX_UNUSED(appName);
 
 	EM_ASM(
@@ -53,7 +52,6 @@ bool fsInit(const char* appName)
 
 void fsShutdown()
 {
-	JX_LOG_DEBUG("fsShutdown()\n");
 }
 
 bool fsIsReady()
