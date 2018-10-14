@@ -70,7 +70,7 @@ void fsConvertStringToFilename(const char* name, char* filename, uint32_t maxLen
 	const uint32_t len = bx::uint32_min(nameLen, maxLen - 1);
 
 	char* dst = filename;
-	for (uint32_t i = 0; i < nameLen; ++i) {
+	for (uint32_t i = 0; i < len; ++i) {
 		if (bx::strFind(svIllegalChars, name[i]) == nullptr) {
 			*dst++ = name[i];
 		} else {

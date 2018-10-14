@@ -145,12 +145,11 @@ void getCPUBrandString(char* str, uint32_t maxLen)
 	BX_UNUSED(maxLen);
 
 #if BX_PLATFORM_WINDOWS
-
 	// Calling __cpuid with 0x80000000 as the InfoType argument
 	// gets the number of valid extended IDs.
 	int cpuInfo[4];
 	__cpuid(cpuInfo, 0x80000000);
-	uint32_t nExIds = (uint32_t)cpuInfo[0];
+	const uint32_t nExIds = (uint32_t)cpuInfo[0];
 
 	// Get the information associated with each extended ID.
 	str[0] = '\0';
@@ -159,13 +158,13 @@ void getCPUBrandString(char* str, uint32_t maxLen)
 
 		// Interpret CPU brand string.
 		if (i == 0x80000002) {
-			memcpy(str, cpuInfo, 16);
+			bx::memCopy(str, cpuInfo, 16);
 			str[16] = '\0';
 		} else if (i == 0x80000003) {
-			memcpy(str + 16, cpuInfo, 16);
+			bx::memCopy(str + 16, cpuInfo, 16);
 			str[32] = '\0';
 		} else if (i == 0x80000004) {
-			memcpy(str + 32, cpuInfo, 16);
+			bx::memCopy(str + 32, cpuInfo, 16);
 			str[48] = '\0';
 			break;
 		}
@@ -203,6 +202,8 @@ void getCPUBrandString(char* str, uint32_t maxLen)
 	str[1] = 'P';
 	str[2] = 'i';
 	str[3] = 0;
+#elif BX_PLATFORM_EMSCRIPTEN
+	bx::snprintf(str, maxLen, "Emscripten");
 #endif // BX_PLATFORM_RPI
 #endif // BX_CPU_X86
 }
@@ -243,6 +244,8 @@ bool getOSFriendlyName(char* str, uint32_t maxLen)
 	bx::snprintf(str, maxLen, "RaspberryPi");
 #elif BX_PLATFORM_OSX
 	bx::snprintf(str, maxLen, "Mac OS X x64");
+#elif BX_PLATFORM_EMSCRIPTEN
+	bx::snprintf(str, maxLen, "Emscripten");
 #else
 	return false;
 #endif

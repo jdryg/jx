@@ -46,7 +46,7 @@ char* strReplace(const char* str, uint32_t len, const char* from, const char* to
 	const char* match = bx::strFind(str, from);
 
 	// If there's no match or the match is beyond the end of the string, just duplicate the input string.
-	if (!match || (match - str) >= len) {
+	if (!match || (match - str) >= (int)len) {
 		return strDup(str, len);
 	}
 
@@ -90,7 +90,7 @@ char* strReplace(const char* str, uint32_t len, const char* from, const char* to
 
 		// Find the new match...
 		match = bx::strFind(src, from);
-		if (match - str >= len) {
+		if (match - str >= (int)len) {
 			break;
 		}
 	}

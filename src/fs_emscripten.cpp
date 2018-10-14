@@ -21,7 +21,9 @@ struct File
 	FILE* m_Handle;
 };
 
-static void sync();
+static bool s_FSRequiresSyncing = true;
+
+static void invalidateFileSystem();
 
 bool fsInit(const char* appName)
 {
@@ -32,17 +34,19 @@ bool fsInit(const char* appName)
 		console.log("Creating and mounting IDBFS");
 		FS.mkdir('/IDBFS');
 		FS.mount(IDBFS, {}, '/IDBFS');
-		
+
 		Module.syncdone = 0;
-		FS.syncfs(true, function (err) {
-			if(err) {
-				console.log(err);
+		FS.syncfs(true, function(err) {
+			if (err) {
+				console.log("FS.syncfs(true) error:", err);
 			} else {
 				Module.print("FS.syncfs(true) finished (first time)");
 				Module.syncdone = 1;
 			}
 		});
 	);
+
+	s_FSRequiresSyncing = false;
 
 	return true;
 }
@@ -57,24 +61,55 @@ bool fsIsReady()
 	return emscripten_run_script_int("Module.syncdone") == 1;
 }
 
+void fsSync()
+{
+	if (!s_FSRequiresSyncing) {
+		return;
+	}
+
+	EM_ASM(
+		console.log("Synchronizing file system");
+		Module.syncdone = 0;
+		FS.syncfs(false, function(err) {
+			if (err) {
+				console.log("FS.syncfs(false) error: ", err);
+			} else {
+				Module.print("FS.syncfs(false) finished");
+
+				FS.syncfs(true, function(err) {
+					if (err) {
+						console.log("FS.syncfs(true) error: ", err);
+					} else {
+						Module.print("FS.syncfs(true) finished");
+						Module.syncdone = 1;
+					}
+				});
+			}
+		});
+	);
+
+	s_FSRequiresSyncing = false;
+}
+
 File* fsFileOpenRead(BaseDir::Enum baseDir, const char* relPath)
 {
 	JX_LOG_DEBUG("fsFileOpenRead(%d, \"%s\")\n", baseDir, relPath);
 
-	FILE* handle = nullptr;
 	if (baseDir == BaseDir::Install) {
 		chdir("/");
 	} else if (baseDir == BaseDir::UserData) {
 		chdir("/IDBFS");
 	}
 
-	handle = fopen(relPath, "rb");
+	FILE* handle = fopen(relPath, "rb");
 	if (!handle) {
+		JX_LOG_ERROR("Failed to open file \"%s\" for reading.\n", relPath);
 		return nullptr;
 	}
 
 	File* f = (File*)JX_ALLOC(sizeof(File));
 	if (!f) {
+		JX_LOG_ERROR("Memory allocation failed (size: %u bytes)\n", sizeof(File));
 		fclose(handle);
 		return nullptr;
 	}
@@ -90,18 +125,21 @@ File* fsFileOpenWrite(BaseDir::Enum baseDir, const char* relPath)
 
 	if (baseDir != BaseDir::UserData) {
 		JX_CHECK(false, "Can only open files for writing in user data folder.");
+		JX_LOG_ERROR("Tried to open read-only file \"%s\" for writing.\n", relPath);
 		return nullptr;
 	}
-	
+
 	chdir("/IDBFS");
 
 	FILE* handle = handle = fopen(relPath, "wb");
 	if (!handle) {
+		JX_LOG_ERROR("Failed to open file \"%s\" for writing.\n", relPath);
 		return nullptr;
 	}
 
 	File* f = (File*)JX_ALLOC(sizeof(File));
 	if (!f) {
+		JX_LOG_ERROR("Memory allocation failed (size: %u bytes)\n", sizeof(File));
 		fclose(handle);
 		return nullptr;
 	}
@@ -121,7 +159,7 @@ void fsFileClose(File* f)
 	}
 	JX_FREE(f);
 
-	sync();
+	invalidateFileSystem();
 }
 
 uint32_t fsFileReadBytes(File* f, void* buffer, uint32_t len)
@@ -155,6 +193,7 @@ bool fsFileRemove(BaseDir::Enum baseDir, const char* relPath)
 	JX_LOG_DEBUG("fsFileRemove(%d, \"%s\")\n", baseDir, relPath);
 	if (baseDir != BaseDir::UserData) {
 		JX_CHECK(false, "Can only remove files from user data folder");
+		JX_LOG_ERROR("Tried to remove read-only file \"%s\".\n", relPath);
 		return false;
 	}
 
@@ -164,7 +203,7 @@ bool fsFileRemove(BaseDir::Enum baseDir, const char* relPath)
 		return false;
 	}
 
-	sync();
+	invalidateFileSystem();
 
 	return true;
 }
@@ -175,13 +214,13 @@ bool fsCreateFolderTree(BaseDir::Enum baseDir, const char* relPath)
 
 	if (baseDir != BaseDir::UserData) {
 		JX_CHECK(false, "Can only create subfolders inside user data folder");
+		JX_LOG_ERROR("Tried to create folder tree in read-only location.\n");
 		return false;
 	}
 
 	chdir("/IDBFS");
 
 	char partialPath[512];
-
 	const char* slash = strchr(relPath, '/');
 	while (slash) {
 		const uint32_t partialLen = (uint32_t)(slash - relPath);
@@ -191,32 +230,16 @@ bool fsCreateFolderTree(BaseDir::Enum baseDir, const char* relPath)
 		bx::memCopy(partialPath, relPath, sizeof(char) * copyLen);
 		partialPath[copyLen] = '\0';
 
-#if 0
-		const int res = mkdir(partialPath, S_IRWXU);
-		if (res != 0 && res != EEXIST) {
-			JX_LOG_ERROR("Failed to create directory \"/IDBFS/%s\" (err: %d)\n", partialPath, res);
-			return false;
-		}
-#else
 		const int res = mkdir(partialPath, S_IRWXU);
 		JX_LOG_DEBUG("mkdir(\"%s\", S_IRWXU) = %d\n", partialPath, res);
-#endif
 
 		slash = strchr(slash + 1, '/');
 	}
 
-#if 0
-	const int res = mkdir(relPath, S_IRWXU);
-	if (res != 0 && res != EEXIST) {
-		JX_LOG_ERROR("Failed to create directory \"/IDBFS/%s\" (err: %d)\n", relPath, res);
-		return false;
-	}
-#else
 	const int res = mkdir(relPath, S_IRWXU);
 	JX_LOG_DEBUG("mkdir(\"%s\", S_IRWXU) = %d\n", relPath, res);
-#endif
 
-	sync();
+	invalidateFileSystem();
 
 	return true;
 }
@@ -257,31 +280,9 @@ bool fsEnumerateFiles(BaseDir::Enum baseDir, const char* relPath, EnumerateFiles
 	return true;
 }
 
-static void sync()
+static void invalidateFileSystem()
 {
-	if (!fsIsReady()) {
-		return;
-	}
-
-	EM_ASM(
-		Module.syncdone = 0;
-		FS.syncfs(false, function(err) {
-			if (err) {
-				console.log(err);
-			} else {
-				Module.print("FS.syncfs(false) finished");
-
-				FS.syncfs(true, function(err) {
-					if (err) {
-						console.log(err);
-					} else {
-						Module.print("FS.syncfs(true) finished");
-						Module.syncdone = 1;
-					}
-				});
-			}
-		});
-	);
+	s_FSRequiresSyncing = true;
 }
-}
+} // namespace jx
 #endif

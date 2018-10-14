@@ -1,6 +1,8 @@
 #include <jx/stack_allocator.h>
 #include <jx/sys.h>
 
+BX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wunused-private-field")
+
 namespace jx
 {
 struct AllocHeader

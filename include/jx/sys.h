@@ -2,6 +2,7 @@
 #define JX_SYS_H
 
 #include <stdint.h>
+#include <bx/platform.h>
 
 #ifndef JX_CONFIG_DEBUG
 #	define JX_CONFIG_DEBUG 0

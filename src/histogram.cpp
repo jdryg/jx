@@ -138,9 +138,8 @@ uint32_t histogramGetLargestBucketFreq(const Histogram* histogram)
 
 void histogramRecalcBuckets(Histogram* histogram, int firstBucketMinValue, uint32_t bucketSize)
 {
-	const int minValue = histogramGetMinValue(histogram);
 	const int maxValue = histogramGetMaxValue(histogram);
-	JX_CHECK(firstBucketMinValue <= minValue, "Invalid first bucket value");
+	JX_CHECK(firstBucketMinValue <= histogramGetMinValue(histogram), "Invalid first bucket value");
 
 	histogram->m_FirstBucketValue = firstBucketMinValue;
 	histogram->m_BucketSize = bucketSize;

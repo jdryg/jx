@@ -32,7 +32,10 @@ typedef jtl::delegate<void(const char* relPath, bool isFile)> EnumerateFilesCall
 
 bool fsInit(const char* appName);
 void fsShutdown();
+#if BX_PLATFORM_EMSCRIPTEN
 bool fsIsReady();
+void fsSync();
+#endif
 
 #if BX_PLATFORM_WINDOWS
 const wchar_t* fsGetBaseDirPath(BaseDir::Enum baseDir);
