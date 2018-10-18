@@ -1,7 +1,7 @@
 #include <jx/stack_allocator.h>
 #include <jx/sys.h>
 
-BX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wunused-private-field")
+BX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG("-Wunused-private-field")
 
 namespace jx
 {

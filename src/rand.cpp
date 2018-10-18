@@ -1,7 +1,7 @@
 #include <jx/rand.h>
 #include <bx/macros.h>
 
-BX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wdeprecated-register")
+BX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG("-Wdeprecated-register")
 
 namespace jx
 {

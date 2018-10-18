@@ -4,6 +4,7 @@
 namespace jx
 {
 BX_PRAGMA_DIAGNOSTIC_IGNORED_MSVC(4127) // conditional expression is constant
+BX_PRAGMA_DIAGNOSTIC_IGNORED_GCC("-Wimplicit-fallthrough=0")
 
 #define ALLOW_UNALIGNED_READS 1 // TODO: bx define for platforms without unaligned reads?
 

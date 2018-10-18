@@ -184,13 +184,13 @@ void getCPUBrandString(char* str, uint32_t maxLen)
 
 		// Interpret CPU brand string.
 		if (i == 0x80000002) {
-			memcpy(str, cpuInfo, 16);
+			bx::memCopy(str, cpuInfo, 16);
 			str[16] = '\0';
 		} else if (i == 0x80000003) {
-			memcpy(str + 16, cpuInfo, 16);
+			bx::memCopy(str + 16, cpuInfo, 16);
 			str[32] = '\0';
 		} else if (i == 0x80000004) {
-			memcpy(str + 32, cpuInfo, 16);
+			bx::memCopy(str + 32, cpuInfo, 16);
 			str[48] = '\0';
 			break;
 		}
