@@ -12,6 +12,8 @@
 namespace jx
 {
 #if JX_CONFIG_MATH_SIMD
+BX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG("-Wunused-const-variable")
+
 // Maps a 4-bit mask obtained from _mm_movemask_ps() to visibility result
 // NOTE: Mask bits are set if rect is culled.
 static const uint32_t s_MaskToVisibility4[16] = {
