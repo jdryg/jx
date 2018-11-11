@@ -206,9 +206,9 @@ bool fsCreateFolderTree(BaseDir::Enum baseDir, const char* relPath)
 
 	char partialPath[512];
 
-	const char* slash = bx::strFind(relPath, '/');
-	while (slash) {
-		const uint32_t partialLen = (uint32_t)(slash - relPath);
+	bx::StringView slash = bx::strFind(relPath, '/');
+	while (!slash.isEmpty()) {
+		const uint32_t partialLen = (uint32_t)(slash.getPtr() - relPath);
 		JX_CHECK(partialLen < BX_COUNTOF(partialPath) - 1, "Partial path too long!");
 
 		const uint32_t copyLen = bx::uint32_min(partialLen, BX_COUNTOF(partialPath) - 1);
@@ -219,7 +219,7 @@ bool fsCreateFolderTree(BaseDir::Enum baseDir, const char* relPath)
 			return false;
 		}
 
-		slash = bx::strFind(slash + 1, '/');
+		slash = bx::strFind(slash.getPtr() + 1, '/');
 	}
 
 	return createDirectory(relPath);
@@ -233,11 +233,11 @@ bool fsEnumerateFiles(BaseDir::Enum baseDir, const char* relPath, EnumerateFiles
 		return false;
 	}
 
-	const char* lastSlash = bx::strRFind(relPath, '/');
-	if(!lastSlash) {
+	bx::StringView lastSlash = bx::strRFind(relPath, '/');
+	if(lastSlash.isEmpty()) {
 		return false;
 	}
-	const uint32_t len = (uint32_t)(lastSlash - relPath);
+	const uint32_t len = (uint32_t)(lastSlash.getPtr() - relPath);
 
 	char folder[256];
 	bx::memCopy(folder, relPath, len);
@@ -278,12 +278,12 @@ static char* getInstallFolder()
 	}
 
 	bx::StringView sv(folder, size);
-	const char* lastSlash = bx::strRFind(sv, '/');
-	if(!lastSlash) {
+	bx::StringView lastSlash = bx::strRFind(sv, '/');
+	if(lastSlash.isEmpty()) {
 		return nullptr;
 	}
 	
-	const uint32_t len = (uint32_t)(lastSlash - folder);
+	const uint32_t len = (uint32_t)(lastSlash.getPtr() - folder);
 	char* installFolder = (char*)JX_ALLOC(len + 1);
 	bx::memCopy(installFolder, folder, len);
 	installFolder[len] = '\0';
