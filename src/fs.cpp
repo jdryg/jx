@@ -71,7 +71,7 @@ void fsConvertStringToFilename(const char* name, char* filename, uint32_t maxLen
 
 	char* dst = filename;
 	for (uint32_t i = 0; i < len; ++i) {
-		if (bx::strFind(svIllegalChars, name[i]) == nullptr) {
+		if (bx::strFind(svIllegalChars, name[i]).isEmpty()) {
 			*dst++ = name[i];
 		} else {
 			*dst++ = '_';

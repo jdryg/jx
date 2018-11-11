@@ -43,10 +43,10 @@ char* strReplace(const char* str, uint32_t len, const char* from, const char* to
 	}
 
 	// Find the first match
-	const char* match = bx::strFind(str, from);
+	bx::StringView match = bx::strFind(str, from);
 
 	// If there's no match or the match is beyond the end of the string, just duplicate the input string.
-	if (!match || (match - str) >= (int)len) {
+	if (match.isEmpty() || (match.getPtr() - str) >= (int)len) {
 		return strDup(str, len);
 	}
 
@@ -59,9 +59,9 @@ char* strReplace(const char* str, uint32_t len, const char* from, const char* to
 	const char* src = str;
 	char* dst = finalString;
 
-	while (match) {
+	while (!match.isEmpty()) {
 		const size_t curPos = (size_t)(dst - finalString);
-		size_t matchRelPos = (size_t)(match - src);
+		size_t matchRelPos = (size_t)(match.getPtr() - src);
 
 		// Check if the match is still inside the current string bounds.
 		bool appendTo = true;
@@ -90,7 +90,7 @@ char* strReplace(const char* str, uint32_t len, const char* from, const char* to
 
 		// Find the new match...
 		match = bx::strFind(src, from);
-		if (match - str >= (int)len) {
+		if (match.getPtr() - str >= (int)len) {
 			break;
 		}
 	}
