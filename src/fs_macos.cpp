@@ -277,7 +277,7 @@ static char* getInstallFolder()
 		return nullptr;
 	}
 
-	bx::StringView sv(folder, size);
+	bx::StringView sv(folder);
 	bx::StringView lastSlash = bx::strRFind(sv, '/');
 	if(lastSlash.isEmpty()) {
 		return nullptr;
