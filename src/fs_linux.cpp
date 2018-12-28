@@ -289,19 +289,21 @@ static char* getInstallFolder()
 
 static char* getUserDataFolder(const char* appName)
 {
-	const char* homedir = nullptr;
-	if((homedir = getenv("HOME")) == nullptr) {
-        if((homedir = getenv("XDG_DATA_HOME")) == nullptr) {
-		    homedir = getpwuid(getuid())->pw_dir;
-        }
-	}
-
-	if(!homedir) {
-		return nullptr;
-	}
-
 	char docPath[512];
-	bx::snprintf(docPath, BX_COUNTOF(docPath), "%s/Documents/%s/", homedir, appName);
+	const char* homedir = getenv("XDG_DATA_HOME");
+	if(homedir == nullptr) {
+		homedir = getenv("HOME");
+		if(homedir == nullptr) {
+			homedir = getpwuid(getuid())->pw_dir;
+			if(homedir == nullptr) {
+				return getInstallFolder();
+			}
+		}
+
+		bx::snprintf(docPath, BX_COUNTOF(docPath), "%s/.local/share/%s/", homedir, appName);
+	} else {
+		bx::snprintf(docPath, BX_COUNTOF(docPath), "%s/%s/", homedir, appName);
+	}
 
 	const uint32_t len = (uint32_t)bx::strLen(docPath);
 	char* dataFolder = (char*)JX_ALLOC(len + 1);
@@ -337,7 +339,14 @@ static bool createDirectory(const char* path)
 
 	mkdir(path, S_IRWXU);
 
-	return true;
+	// Check if directory exists.
+	DIR* dir = opendir(path);
+	if(dir) {
+		closedir(dir);
+		return true;
+	}
+
+	return false;
 }
 }
 #endif
