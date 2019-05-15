@@ -17,7 +17,7 @@ namespace jx
 
 #define NAME_SIZE 128
 
-static const GUID GUID_CLASS_MONITOR = { 0x4d36e96e, 0xe325, 0x11ce, 0xbf, 0xc1, 0x08, 0x00, 0x2b, 0xe1, 0x03, 0x18 };
+static const GUID GUID_CLASS_MONITOR = { 0x4d36e96e, 0xe325, 0x11ce, { 0xbf, 0xc1, 0x08, 0x00, 0x2b, 0xe1, 0x03, 0x18 } };
 static HMONITOR s_PrimaryMonitorHandle = NULL;
 
 static BOOL CALLBACK monitorEnumProc(_In_  HMONITOR hMonitor, _In_  HDC /*hdcMonitor*/, _In_  LPRECT /*lprcMonitor*/, _In_  LPARAM /*dwData*/)

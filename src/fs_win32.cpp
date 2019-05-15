@@ -254,7 +254,7 @@ bool fsEnumerateFiles(BaseDir::Enum baseDir, const char* relPath, EnumerateFiles
 	const bool setcwdResult = setCurrentDirectory(baseDir);
 	if (!setcwdResult) {
 		JX_CHECK(false, "Failed to set current working directory");
-		return nullptr;
+		return false;
 	}
 
 	wchar_t utf16RelPath[512];
