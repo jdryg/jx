@@ -2,6 +2,7 @@
 #define JX_LOGGER_H
 
 #include <stdint.h>
+#include <jtl/delegate.h>
 
 namespace jx
 {
@@ -28,10 +29,14 @@ struct LoggerFlags
 	};
 };
 
+typedef jtl::delegate<void(LogLevel::Enum level, const char* str)> LoggingCallback;
+
 Logger* createLog(const char* name, uint32_t flags);
 void destroyLog(Logger* logger);
 
 const char* loggerGetName(Logger* logger);
+uint32_t loggerRegisterCallback(Logger* logger, LoggingCallback cb);
+void loggerUnregisterCallback(Logger* logger, uint32_t cbID);
 
 void logf(Logger* logger, LogLevel::Enum level, const char* fmt, ...);
 }

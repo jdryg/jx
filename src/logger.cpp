@@ -16,10 +16,12 @@ struct Logger
 {
 	char* m_Name;
 	File* m_File;
-	uint32_t m_Flags;
 #if BX_CONFIG_SUPPORTS_THREADING
 	bx::Mutex* m_Mutex;
 #endif
+	LoggingCallback* m_Callbacks;
+	uint32_t m_NumCallbacks;
+	uint32_t m_Flags;
 };
 
 Logger* createLog(const char* name, uint32_t flags)
@@ -87,6 +89,28 @@ const char* loggerGetName(Logger* logger)
 	return logger->m_Name;
 }
 
+uint32_t loggerRegisterCallback(Logger* logger, LoggingCallback cb)
+{
+	LoggingCallback* newCallbacks = (LoggingCallback*)JX_REALLOC(logger->m_Callbacks, sizeof(LoggingCallback) * (logger->m_NumCallbacks + 1));
+	if (!newCallbacks) {
+		return UINT32_MAX;
+	}
+
+	const uint32_t cbID = logger->m_NumCallbacks;
+	BX_PLACEMENT_NEW(&newCallbacks[cbID], LoggingCallback)(cb);
+
+	logger->m_Callbacks = newCallbacks;
+	++logger->m_NumCallbacks;
+
+	return cbID;
+}
+
+void loggerUnregisterCallback(Logger* logger, uint32_t cbID)
+{
+	BX_UNUSED(logger, cbID);
+	JX_CHECK(false, "Not implemented");
+}
+
 void logf(Logger* logger, LogLevel::Enum level, const char* fmt, ...)
 {
 	JX_CHECK(logger != nullptr, "Null logger passed");
@@ -140,6 +164,11 @@ void logf(Logger* logger, LogLevel::Enum level, const char* fmt, ...)
 
 	if (forceFlush) {
 		// TODO: fflush?
+	}
+
+	const uint32_t numCallbacks = logger->m_NumCallbacks;
+	for (uint32_t i = 0; i < numCallbacks; ++i) {
+		logger->m_Callbacks[i](level, logLine);
 	}
 #else
 	BX_UNUSED(logLineLen);
