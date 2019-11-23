@@ -267,7 +267,6 @@ void rectSoAToAoS(const RectSoA* soa, uint32_t numRects, Rect* aos)
 	}
 }
 
-#if 0
 void rectIntersect(const RectSoA* soa, uint32_t numRects, const Rect* test, bool* results)
 {
 	const float* minx = soa->m_MinX;
@@ -384,7 +383,6 @@ void rectIntersect(const RectSoA* soa, uint32_t numRects, const Rect* test, bool
 		}
 	}
 }
-#endif
 
 // NOTE: This is the same code as above but the results are packed into a bitset. 
 // No measurable performance difference but it uses less memory.
