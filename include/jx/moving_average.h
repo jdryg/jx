@@ -19,6 +19,8 @@ float movAvgPush(MovingAverage* ma, float val);
 float movAvgGetAverage(const MovingAverage* ma);
 float movAvgGetStdDev(const MovingAverage* ma);
 void movAvgGetBounds(const MovingAverage* ma, float* minVal, float* maxVal);
+const float* movAvgGetValues(const MovingAverage* ma);
+uint32_t movAvgGetNumValues(const MovingAverage* ma);
 }
 
 #endif

@@ -112,4 +112,14 @@ void movAvgGetBounds(const MovingAverage* ma, float* minVal, float* maxVal)
 		*maxVal = max;
 	}
 }
+
+const float* movAvgGetValues(const MovingAverage* ma)
+{
+	return ma->m_Data;
+}
+
+uint32_t movAvgGetNumValues(const MovingAverage* ma)
+{
+	return ma->m_Count;
+}
 }
