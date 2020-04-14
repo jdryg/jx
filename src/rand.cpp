@@ -1,5 +1,5 @@
 #include <jx/rand.h>
-#include <bx/macros.h>
+#include <bx/bx.h>
 
 BX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG("-Wdeprecated-register")
 
