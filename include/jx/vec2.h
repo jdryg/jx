@@ -8,12 +8,12 @@ struct Vec2
 	float x, y;
 };
 
-inline float vec2DistanceSqr(const Vec2& a, const Vec2& b)
-{
-	const float dx = b.x - a.x;
-	const float dy = b.y - a.y;
-	return dx * dx + dy * dy;
+Vec2 vec2(float x, float y);
+void vec2Set(Vec2& v, float x, float y);
+
+float vec2DistanceSqr(const Vec2& a, const Vec2& b);
 }
-}
+
+#include "inline/vec2.inl"
 
 #endif
