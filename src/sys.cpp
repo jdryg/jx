@@ -2,7 +2,7 @@
 #include <jx/rand.h>
 #include <jx/fs.h>
 #include <jx/logger.h>
-#include <jx/stack_allocator.h>
+#include <jx/linear_allocator.h>
 #include <bx/allocator.h>
 #include <chrono>
 
@@ -26,7 +26,7 @@ struct Context
 {
 	bx::AllocatorI* m_SystemAllocator;
 	bx::AllocatorI* m_GlobalAllocator;
-	bx::AllocatorI* m_FrameAllocator;
+	LinearAllocator* m_FrameAllocator;
 	Logger* m_Logger;
 };
 
@@ -57,8 +57,7 @@ bool initSystem(const char* appName)
 	s_Context->m_GlobalAllocator = createAllocator("Global");
 
 	// Initialize temporary/frame allocator
-	void* buffer = BX_ALLOC(systemAllocator, JX_CONFIG_FRAME_ALLOCATOR_CAPACITY);
-	s_Context->m_FrameAllocator = BX_NEW(systemAllocator, StackAllocator)(buffer, JX_CONFIG_FRAME_ALLOCATOR_CAPACITY);
+	s_Context->m_FrameAllocator = BX_NEW(systemAllocator, LinearAllocator)(systemAllocator, JX_CONFIG_FRAME_ALLOCATOR_CAPACITY);
 	
 	// Initialize the filesystem
 	if (!fsInit(appName)) {
@@ -94,6 +93,7 @@ void shutdownSystem()
 	destroyLog(s_Context->m_Logger);
 	s_Context->m_Logger = nullptr;
 
+	BX_DELETE(systemAllocator, s_Context->m_FrameAllocator);
 	destroyAllocator(s_Context->m_GlobalAllocator);
 
 #if JX_CONFIG_TRACE_ALLOCATIONS
@@ -102,6 +102,11 @@ void shutdownSystem()
 
 	BX_FREE(systemAllocator, s_Context);
 	s_Context = nullptr;
+}
+
+void frame()
+{
+	s_Context->m_FrameAllocator->freeAll();
 }
 
 bx::AllocatorI* createAllocator(const char* name)

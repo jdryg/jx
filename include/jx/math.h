@@ -7,12 +7,31 @@
 namespace jx
 {
 uint32_t nextPowerOf2(uint32_t v);
-bool isPowerOf2(uint32_t v);
 uint32_t log2ui(uint32_t v);
 
 float snapTo(float x, float stepSize);
 
 bool closestPointOnLineSegment(float x, float y, float sx, float sy, float ex, float ey, float thickness, float* t);
+
+void linspacef(float start, float end, float* x, uint32_t n);
+
+// Given an array arr, and given a value val, returns a value j such that val is between arr[j]
+// and arr[j + 1]. arr must be monotonic, either increasing or decreasing. j = UINT32_MAX is returned
+// on error (i.e. if n < 2). 
+// If val is out of range the closest j is returned.
+// E.g. for a ascending array arr, 
+// - if val < arr[0] then j = 0, so that linear interpolation between arr[0] and arr[1] gives a factor
+//   less than 0
+// - if val > arr[n-1] the j = n-2, so that linear interpolation between arr[n-2] and arr[n-1] gives
+//   a factor greater than 1.
+uint32_t locate1f(const float* arr, uint32_t n, float val);
+uint32_t locate1d(const double* arr, uint32_t n, double val);
+
+// Same as locate1 but arr is 2-dimensional. val corresponds to the first dimension
+uint32_t locate2f(const float* arr, uint32_t n, float val);
+uint32_t locate2d(const double* arr, uint32_t n, double val);
+
+void interp1f(const float* x, const float* y, uint32_t n, const float* xq, float* yq, uint32_t nq);
 }
 
 #include "inline/math.inl"

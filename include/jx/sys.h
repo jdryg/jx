@@ -61,6 +61,7 @@ struct Logger;
 
 bool initSystem(const char* appName);
 void shutdownSystem();
+void frame();
 
 bx::AllocatorI* createAllocator(const char* name);
 void destroyAllocator(bx::AllocatorI* allocator);
