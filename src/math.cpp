@@ -107,7 +107,7 @@ void interp1f(const float* x, const float* y, uint32_t n, const float* xq, float
 		const uint32_t j = jx::locate1f(x, n, q);
 
 		const float t = (q - x[j]) / (x[j + 1] - x[j]);
-		yq[i] = y[j] + t * (y[j + 1] - y[j]);
+		yq[i] = bx::lerp(y[j], y[j + 1], t);
 	}
 }
 }
