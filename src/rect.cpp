@@ -559,7 +559,7 @@ void rectIntersectBitset(const RectSoA* soa, uint32_t numRects, const Rect* test
 }
 #endif
 
-bool rectLineSegmentIntersection(const Rect* rect, const jx::Vec2& s, const jx::Vec2& e)
+bool rectLineSegmentIntersection(const Rect* rect, const jx::Vec2f& s, const jx::Vec2f& e)
 {
 	float st, et, fst = 0, fet = 1;
 

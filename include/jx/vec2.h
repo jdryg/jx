@@ -10,26 +10,51 @@ struct AllocatorI;
 
 namespace jx
 {
-struct Vec2
+struct Vec2f
 {
 	float x, y;
 };
 
-struct Vec2Array
+struct Vec2d
+{
+	double x, y;
+};
+
+struct Vec2fArray
 {
 	bx::AllocatorI* m_Allocator;
-	Vec2* m_Pts;
+	Vec2f* m_Pts;
 	uint32_t m_Size;
 	uint32_t m_Capacity;
 };
 
-Vec2 vec2(float x, float y);
-void vec2Set(Vec2& v, float x, float y);
-float vec2DistanceSqr(const Vec2& a, const Vec2& b);
+struct Vec2dArray
+{
+	bx::AllocatorI* m_Allocator;
+	Vec2d* m_Pts;
+	uint32_t m_Size;
+	uint32_t m_Capacity;
+};
 
-bool vec2ArrInit(Vec2Array* arr, uint32_t n, bx::AllocatorI* allocator = nullptr);
-void vec2ArrDestroy(Vec2Array* arr);
-bool vec2ArrResize(Vec2Array* arr, uint32_t n);
+Vec2f vec2f(float x, float y);
+void vec2fSet(Vec2f& v, float x, float y);
+float vec2fDistanceSqr(const Vec2f& a, const Vec2f& b);
+
+Vec2d vec2d(double x, double y);
+void vec2dSet(Vec2d& v, double x, double y);
+double vec2dDistanceSqr(const Vec2d& a, const Vec2d& b);
+
+bool vec2fArrInit(Vec2fArray* arr, uint32_t n, bx::AllocatorI* allocator = nullptr);
+void vec2fArrDestroy(Vec2fArray* arr);
+bool vec2fArrResize(Vec2fArray* arr, uint32_t n);
+bool vec2fArrFromScalar(Vec2fArray* arr, const float* x, const float* y, uint32_t n);
+
+bool vec2dArrInit(Vec2dArray* arr, uint32_t n, bx::AllocatorI* allocator = nullptr);
+void vec2dArrDestroy(Vec2dArray* arr);
+bool vec2dArrResize(Vec2dArray* arr, uint32_t n);
+bool vec2dArrFromScalar(Vec2dArray* arr, const double* x, const double* y, uint32_t n);
+
+bool vec2Arrd2f(Vec2fArray* dst, const Vec2dArray* src);
 }
 
 #include "inline/vec2.inl"

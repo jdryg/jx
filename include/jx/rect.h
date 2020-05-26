@@ -6,7 +6,7 @@
 
 namespace jx
 {
-struct Vec2;
+struct Vec2f;
 
 struct Rect
 {
@@ -30,7 +30,7 @@ void rectIntersectBitset(const RectSoA* soa, uint32_t numRects, const Rect* test
 
 void rectCalcFromPointList(const float* points, uint32_t numPoints, Rect* rect);
 
-bool rectLineSegmentIntersection(const Rect* rect, const jx::Vec2& s, const jx::Vec2& e);
+bool rectLineSegmentIntersection(const Rect* rect, const jx::Vec2f& s, const jx::Vec2f& e);
 
 inline void rectInflate(Rect* rect, float x, float y)
 {
