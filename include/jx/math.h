@@ -8,6 +8,7 @@ namespace jx
 {
 uint32_t nextPowerOf2(uint32_t v);
 uint32_t log2ui(uint32_t v);
+uint32_t bitcount(uint32_t v);
 
 float snapTo(float x, float stepSize);
 

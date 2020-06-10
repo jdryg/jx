@@ -32,4 +32,14 @@ inline float snapTo(float x, float stepSize)
 	int ix = (int)bx::round(x / stepSize);
 	return ix * stepSize;
 }
+
+// http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetKernighan
+inline uint32_t bitcount(uint32_t v)
+{
+	uint32_t c;
+	for (c = 0; v; c++) {
+		v &= v - 1;
+	}
+	return c;
+}
 }

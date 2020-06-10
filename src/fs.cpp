@@ -1,4 +1,5 @@
 #include <jx/fs.h>
+#include <jx/sys.h>
 #include <bx/platform.h>
 #include <bx/uint32_t.h>
 
@@ -80,8 +81,10 @@ void fsConvertStringToFilename(const char* name, char* filename, uint32_t maxLen
 	*dst = '\0';
 }
 
-char* fsLoadTextFile(BaseDir::Enum baseDir, const char* relPath, bx::AllocatorI* allocator)
+char* fsLoadTextFile(BaseDir::Enum baseDir, const char* relPath, uint64_t* sz, bx::AllocatorI* allocator)
 {
+	allocator = allocator != nullptr ? allocator : jx::getGlobalAllocator();
+
 	File* f = fsFileOpenRead(baseDir, relPath);
 	if (!f) {
 		return nullptr;
@@ -97,6 +100,10 @@ char* fsLoadTextFile(BaseDir::Enum baseDir, const char* relPath, bx::AllocatorI*
 	buffer[size] = '\0';
 
 	fsFileClose(f);
+
+	if (sz) {
+		*sz = size;
+	}
 
 	return buffer;
 }
