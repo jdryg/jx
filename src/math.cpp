@@ -45,14 +45,25 @@ bool closestPointOnLineSegment(float x, float y, float sx, float sy, float ex, f
 	return (pprojx * pprojx + pprojy * pprojy) <= thickness * thickness;
 }
 
-void linspacef(float start, float end, float* x, uint32_t n)
+template<typename T>
+void linspace(T start, T end, T* x, uint32_t n)
 {
-	const float d = (end - start) / (n - 1);
-	float t = start;
+	const T d = (end - start) / (n - 1);
+	T t = start;
 	for (uint32_t i = 0; i < n; ++i) {
 		x[i] = t;
 		t += d;
 	}
+}
+
+void linspacef(float start, float end, float* x, uint32_t n)
+{
+	linspace<float>(start, end, x, n);
+}
+
+void linspaced(double start, double end, double* x, uint32_t n)
+{
+	linspace<double>(start, end, x, n);
 }
 
 template<typename T, uint32_t DIM>

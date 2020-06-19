@@ -15,6 +15,7 @@ float snapTo(float x, float stepSize);
 bool closestPointOnLineSegment(float x, float y, float sx, float sy, float ex, float ey, float thickness, float* t);
 
 void linspacef(float start, float end, float* x, uint32_t n);
+void linspaced(double start, double end, double* x, uint32_t n);
 
 // Given an array arr, and given a value val, returns a value j such that val is between arr[j]
 // and arr[j + 1]. arr must be monotonic, either increasing or decreasing. j = UINT32_MAX is returned
