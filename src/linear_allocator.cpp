@@ -39,7 +39,6 @@ void* LinearAllocator::realloc(void* _ptr, size_t _size, size_t _align, const ch
 {
 	BX_UNUSED(_file, _line);
 	JX_CHECK(!_ptr || (_ptr && !_size), "LinearAllocator doesn't support reallocations");
-	JX_CHECK(!_ptr || (_ptr && _ptr >= m_Buffer && _ptr < m_Buffer + m_Size), "Invalid pointer passed to LinearAllocator");
 
 	_align = bx::max<size_t>(_align, (size_t)8);
 
@@ -78,7 +77,7 @@ void* LinearAllocator::realloc(void* _ptr, size_t _size, size_t _align, const ch
 	c->m_Next = nullptr;
 
 	if (m_ChunkListHead == nullptr) {
-		JX_CHECK(m_ChunkListTail == nulltptr, "Invalid LinearAllocator state");
+		JX_CHECK(m_ChunkListTail == nullptr, "Invalid LinearAllocator state");
 		m_ChunkListHead = c;
 		m_ChunkListTail = c;
 	} else if (m_ChunkListTail != nullptr) {
