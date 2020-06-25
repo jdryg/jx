@@ -47,7 +47,8 @@ void fsFileClose(File* f);
 uint32_t fsFileReadBytes(File* f, void* buffer, uint32_t len);
 uint32_t fsFileWriteBytes(File* f, const void* buffer, uint32_t len);
 uint64_t fsFileGetSize(File* f);
-void fsFileSeek(File* f, int offset, SeekOrigin::Enum origin);
+void fsFileSeek(File* f, int64_t offset, SeekOrigin::Enum origin);
+int64_t fsFileTell(File* f);
 
 bool fsFileRemove(BaseDir::Enum baseDir, const char* relPath);
 

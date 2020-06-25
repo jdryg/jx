@@ -183,14 +183,27 @@ uint64_t fsFileGetSize(File* f)
 	return (uint64_t)fileSize.QuadPart;
 }
 
-void fsFileSeek(File* f, int offset, SeekOrigin::Enum origin)
+void fsFileSeek(File* f, int64_t offset, SeekOrigin::Enum origin)
 {
 	JX_CHECK(f != nullptr && f->m_Handle != INVALID_HANDLE_VALUE, "Trying to read from a null file");
 	
+	LONG offsetLow = (LONG)((offset & 0x00000000FFFFFFFF) >> 0);
+	LONG offsetHigh = (LONG)((offset & 0xFFFFFFFF00000000) >> 32);
 	DWORD moveMethod = origin == SeekOrigin::Begin ? FILE_BEGIN : (origin == SeekOrigin::Current ? FILE_CURRENT : FILE_END);
-	DWORD result = ::SetFilePointer(f->m_Handle, offset, NULL, moveMethod);
+	DWORD result = ::SetFilePointer(f->m_Handle, offsetLow, &offsetHigh, moveMethod);
 	JX_CHECK(result != INVALID_SET_FILE_POINTER, "SetFilePointer failed");
 	BX_UNUSED(result); // for release mode
+}
+
+int64_t fsFileTell(File* f)
+{
+	JX_CHECK(f != nullptr && f->m_Handle != INVALID_HANDLE_VALUE, "Trying to read from a null file");
+
+	LONG distanceHigh = 0;
+	DWORD offsetLow = ::SetFilePointer(f->m_Handle, 0, &distanceHigh, FILE_CURRENT);
+	JX_CHECK(offsetLow != INVALID_SET_FILE_POINTER, "SetFilePointer failed");
+
+	return (int64_t)((uint64_t)offsetLow | ((uint64_t)distanceHigh << 32));
 }
 
 bool fsFileRemove(BaseDir::Enum baseDir, const char* relPath)
