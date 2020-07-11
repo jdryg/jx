@@ -92,9 +92,11 @@ void jsonWriteUInt(JSONWriter* writer, const char* name, uint32_t value)
 		writer->m_JSON.append(",");
 	}
 
-	writer->m_JSON.append("\"");
-	writer->m_JSON.append(name);
-	writer->m_JSON.append("\":");
+	if (name) {
+		writer->m_JSON.append("\"");
+		writer->m_JSON.append(name);
+		writer->m_JSON.append("\":");
+	}
 	writer->m_JSON.append(jtl::to_string(value).c_str());
 
 	writer->m_AddComma = true;
@@ -106,12 +108,15 @@ void jsonWriteBoolean(JSONWriter* writer, const char* name, bool value)
 		writer->m_JSON.append(",");
 	}
 
-	writer->m_JSON.append("\"");
-	writer->m_JSON.append(name);
+	if (name) {
+		writer->m_JSON.append("\"");
+		writer->m_JSON.append(name);
+		writer->m_JSON.append("\":");
+	}
 	if (value) {
-		writer->m_JSON.append("\":true");
+		writer->m_JSON.append("true");
 	} else {
-		writer->m_JSON.append("\":false");
+		writer->m_JSON.append("false");
 	}
 
 	writer->m_AddComma = true;
@@ -123,9 +128,11 @@ void jsonWriteFloat(JSONWriter* writer, const char* name, float value)
 		writer->m_JSON.append(",");
 	}
 
-	writer->m_JSON.append("\"");
-	writer->m_JSON.append(name);
-	writer->m_JSON.append("\":");
+	if (name) {
+		writer->m_JSON.append("\"");
+		writer->m_JSON.append(name);
+		writer->m_JSON.append("\":");
+	}
 	writer->m_JSON.append(jtl::to_string(value).c_str());
 
 	writer->m_AddComma = true;
