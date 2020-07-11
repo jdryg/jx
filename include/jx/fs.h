@@ -53,6 +53,7 @@ int64_t fsFileTell(File* f);
 bool fsFileRemove(BaseDir::Enum baseDir, const char* relPath);
 
 bool fsCreateFolderTree(BaseDir::Enum baseDir, const char* relPath);
+bool fsRemoveEmptyFolder(BaseDir::Enum baseDir, const char* relPath);
 
 bool fsEnumerateFiles(BaseDir::Enum baseDir, const char* relPath, EnumerateFilesCallback callback);
 

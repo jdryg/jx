@@ -262,6 +262,24 @@ bool fsCreateFolderTree(BaseDir::Enum baseDir, const char* relPath)
 	return createDirectory(utf16RelPath);
 }
 
+bool fsRemoveEmptyFolder(BaseDir::Enum baseDir, const char* relPath)
+{
+	if (baseDir != BaseDir::UserData) {
+		JX_CHECK(false, "Can only create subfolders inside user data folder");
+		return false;
+	}
+
+	if (!setCurrentDirectory(BaseDir::UserData)) {
+		JX_CHECK(false, "Failed to set current working directory");;
+		return false;
+	}
+
+	wchar_t utf16RelPath[512];
+	utf8ToUtf16(relPath, (uint16_t*)&utf16RelPath[0], BX_COUNTOF(utf16RelPath));
+
+	::RemoveDirectoryW(utf16RelPath);
+}
+
 bool fsEnumerateFiles(BaseDir::Enum baseDir, const char* relPath, EnumerateFilesCallback callback)
 {
 	const bool setcwdResult = setCurrentDirectory(baseDir);
