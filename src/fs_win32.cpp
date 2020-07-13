@@ -278,6 +278,8 @@ bool fsRemoveEmptyFolder(BaseDir::Enum baseDir, const char* relPath)
 	utf8ToUtf16(relPath, (uint16_t*)&utf16RelPath[0], BX_COUNTOF(utf16RelPath));
 
 	::RemoveDirectoryW(utf16RelPath);
+
+	return true;
 }
 
 bool fsEnumerateFiles(BaseDir::Enum baseDir, const char* relPath, EnumerateFilesCallback callback)
