@@ -186,9 +186,6 @@ inline ComplexMatrix<T> complexMatrix(const Complex<T>& a, const Complex<T>& b, 
 	return res;
 }
 
-// Using cXXX functions    : 4.64ms/iter (coh_tmm: 22.8%, cmmul: 19.9%)
-// Using inlined cXXX funcs: 4.01ms/iter (coh_tmm: 27.4%, cmmul: 7.9%)
-// Using SSE               : 3.90ms/iter (coh_tmm: 29.3%, cmmul: 3.7%)
 template<typename T>
 inline ComplexMatrix<T> cmmul(const ComplexMatrix<T>& a, const ComplexMatrix<T>& b)
 {
@@ -201,21 +198,12 @@ inline ComplexMatrix<T> cmmul(const ComplexMatrix<T>& a, const ComplexMatrix<T>&
 	const Complex<T>& b2 = b.m_Elem[2];
 	const Complex<T>& b3 = b.m_Elem[3];
 
-	const Complex<T> a0b0 = complex(a0.re * b0.re - a0.im * b0.im, a0.re * b0.im + a0.im * b0.re);
-	const Complex<T> a0b1 = complex(a0.re * b1.re - a0.im * b1.im, a0.re * b1.im + a0.im * b1.re);
-	const Complex<T> a2b0 = complex(a2.re * b0.re - a2.im * b0.im, a2.re * b0.im + a2.im * b0.re);
-	const Complex<T> a2b1 = complex(a2.re * b1.re - a2.im * b1.im, a2.re * b1.im + a2.im * b1.re);
-	const Complex<T> a1b2 = complex(a1.re * b2.re - a1.im * b2.im, a1.re * b2.im + a1.im * b2.re);
-	const Complex<T> a1b3 = complex(a1.re * b3.re - a1.im * b3.im, a1.re * b3.im + a1.im * b3.re);
-	const Complex<T> a3b2 = complex(a3.re * b2.re - a3.im * b2.im, a3.re * b2.im + a3.im * b2.re);
-	const Complex<T> a3b3 = complex(a3.re * b3.re - a3.im * b3.im, a3.re * b3.im + a3.im * b3.re);
-
-	const Complex<T> c00 = complex(a0b0.re + a1b2.re, a0b0.im + a1b2.im);
-	const Complex<T> c01 = complex(a0b1.re + a1b3.re, a0b1.im + a1b3.im);
-	const Complex<T> c10 = complex(a2b0.re + a3b2.re, a2b0.im + a3b2.im);
-	const Complex<T> c11 = complex(a2b1.re + a3b3.re, a2b1.im + a3b3.im);
-
-	return complexMatrix(c00, c01, c10, c11);
+	return complexMatrix(
+		cadd(cmul(a0, b0), cmul(a2, b1)),
+		cadd(cmul(a1, b0), cmul(a3, b1)),
+		cadd(cmul(a0, b2), cmul(a2, b3)),
+		cadd(cmul(a1, b2), cmul(a3, b3))
+	);
 }
 
 template<typename T>
