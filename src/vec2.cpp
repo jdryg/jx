@@ -15,11 +15,12 @@ bool vec2fArrInit(Vec2fArray* arr, uint32_t n, bx::AllocatorI* allocator)
 
 void vec2fArrDestroy(Vec2fArray* arr)
 {
-	bx::AllocatorI* allocator = arr->m_Allocator;
-	BX_ALIGNED_FREE(allocator, arr->m_Pts, 16);
-	arr->m_Pts = 0;
-	arr->m_Size = 0;
-	arr->m_Capacity = 0;
+	if (arr->m_Pts != nullptr) {
+		BX_ALIGNED_FREE(arr->m_Allocator, arr->m_Pts, 16);
+		arr->m_Pts = 0;
+		arr->m_Size = 0;
+		arr->m_Capacity = 0;
+	}
 }
 
 bool vec2fArrResize(Vec2fArray* arr, uint32_t n)
@@ -67,11 +68,13 @@ bool vec2dArrInit(Vec2dArray* arr, uint32_t n, bx::AllocatorI* allocator)
 
 void vec2dArrDestroy(Vec2dArray* arr)
 {
-	bx::AllocatorI* allocator = arr->m_Allocator;
-	BX_ALIGNED_FREE(allocator, arr->m_Pts, 16);
-	arr->m_Pts = 0;
-	arr->m_Size = 0;
-	arr->m_Capacity = 0;
+	if (arr->m_Pts != nullptr) {
+		bx::AllocatorI* allocator = arr->m_Allocator;
+		BX_ALIGNED_FREE(allocator, arr->m_Pts, 16);
+		arr->m_Pts = 0;
+		arr->m_Size = 0;
+		arr->m_Capacity = 0;
+	}
 }
 
 bool vec2dArrResize(Vec2dArray* arr, uint32_t n)
