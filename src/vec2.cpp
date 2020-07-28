@@ -2,6 +2,7 @@
 #include <jx/sys.h>
 #include <bx/bx.h>
 #include <bx/allocator.h>
+#include <bx/math.h>
 
 namespace jx
 {
@@ -56,6 +57,27 @@ bool vec2fArrFromScalar(Vec2fArray* arr, const float* x, const float* y, uint32_
 	}
 
 	return true;
+}
+
+uint32_t vec2fArrClosestPoint(const Vec2fArray* arr, const Vec2f& v, float* dist)
+{
+	float closestDistSqr = bx::kFloatMax;
+	uint32_t closestID = UINT32_MAX;
+
+	const uint32_t n = arr->m_Size;
+	for (uint32_t i = 0; i < n; ++i) {
+		const float distSqr = vec2fDistanceSqr(arr->m_Pts[i], v);
+		if (distSqr < closestDistSqr) {
+			closestDistSqr = distSqr;
+			closestID = i;
+		}
+	}
+
+	if (dist) {
+		*dist = closestDistSqr;
+	}
+
+	return closestID;
 }
 
 bool vec2dArrInit(Vec2dArray* arr, uint32_t n, bx::AllocatorI* allocator)

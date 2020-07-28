@@ -48,6 +48,7 @@ bool vec2fArrInit(Vec2fArray* arr, uint32_t n, bx::AllocatorI* allocator = nullp
 void vec2fArrDestroy(Vec2fArray* arr);
 bool vec2fArrResize(Vec2fArray* arr, uint32_t n);
 bool vec2fArrFromScalar(Vec2fArray* arr, const float* x, const float* y, uint32_t n);
+uint32_t vec2fArrClosestPoint(const Vec2fArray* arr, const Vec2f& v, float* dist);
 
 bool vec2dArrInit(Vec2dArray* arr, uint32_t n, bx::AllocatorI* allocator = nullptr);
 void vec2dArrDestroy(Vec2dArray* arr);
