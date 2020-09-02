@@ -112,12 +112,12 @@ File* fsFileOpenRead(BaseDir::Enum baseDir, const char* relPath)
 
 File* fsFileOpenWrite(BaseDir::Enum baseDir, const char* relPath)
 {
-	if (baseDir != BaseDir::UserData) {
-		JX_CHECK(false, "Can only write to user data folder");
+	if (baseDir != BaseDir::UserData && baseDir != BaseDir::AbsolutePath) {
+		JX_CHECK(false, "Can only write to user data folder or absolute path");
 		return nullptr;
 	}
 
-	if (!setCurrentDirectory(BaseDir::UserData)) {
+	if (!setCurrentDirectory(baseDir)) {
 		JX_CHECK(false, "Failed to set current working directory");
 		return nullptr;
 	}
@@ -400,6 +400,8 @@ static bool setCurrentDirectory(BaseDir::Enum baseDir)
 	case BaseDir::UserData:
 		dir = s_FS->m_UserDataFolder;
 		break;
+	case BaseDir::AbsolutePath:
+		return true; // Nothing to do in this case.
 	default:
 		JX_CHECK(false, "Unknown base dir");
 		return false;

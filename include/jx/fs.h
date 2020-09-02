@@ -12,7 +12,8 @@ struct BaseDir
 	enum Enum
 	{
 		Install,
-		UserData
+		UserData,
+		AbsolutePath,
 	};
 };
 
