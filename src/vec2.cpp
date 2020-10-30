@@ -80,6 +80,15 @@ uint32_t vec2fArrClosestPoint(const Vec2fArray* arr, const Vec2f& v, float* dist
 	return closestID;
 }
 
+void vec2fArrRemovePoint(Vec2fArray* arr, uint32_t id)
+{
+	JX_CHECK(id < arr->m_Size, "Invalid point id");
+	if (id != arr->m_Size - 1) {
+		bx::memMove(&arr->m_Pts[id], &arr->m_Pts[id + 1], sizeof(Vec2f) * (arr->m_Size - id - 1));
+	}
+	arr->m_Size--;
+}
+
 bool vec2dArrInit(Vec2dArray* arr, uint32_t n, bx::AllocatorI* allocator)
 {
 	bx::memSet(arr, 0, sizeof(Vec2dArray));
