@@ -68,6 +68,19 @@ bool bsonReaderGetInt64(const BSONReader* bson, const char* key, int64_t* value)
 	return true;
 }
 
+bool bsonReaderGetDouble(const BSONReader* bson, const char* key, double* value)
+{
+	const uint8_t* valuePtr = nullptr;
+	const uint8_t* obj = bsonReader_findKey(bson, key, &valuePtr);
+	if (obj == nullptr || *obj != kTypeDouble) {
+		return false;
+	}
+
+	bx::memCopy(value, valuePtr, sizeof(double));
+
+	return true;
+}
+
 bool bsonReaderGetTimestamp(const BSONReader* bson, const char* key, uint64_t* value)
 {
 	const uint8_t* valuePtr = nullptr;

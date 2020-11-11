@@ -17,6 +17,7 @@ void bsonReaderDestroy(BSONReader* bson, bx::AllocatorI* allocator);
 
 bool bsonReaderGetInt32(const BSONReader* bson, const char* key, int32_t* value);
 bool bsonReaderGetInt64(const BSONReader* bson, const char* key, int64_t* value);
+bool bsonReaderGetDouble(const BSONReader* bson, const char* key, double* value);
 bool bsonReaderGetTimestamp(const BSONReader* bson, const char* key, uint64_t* value);
 bool bsonReaderGetUTF8String(const BSONReader* bson, const char* key, char* value, uint32_t sz);
 BSONReader* bsonReaderGetArray(BSONReader* bson, const char* key, bx::AllocatorI* allocator);
