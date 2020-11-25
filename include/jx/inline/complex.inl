@@ -153,7 +153,11 @@ inline Complex<T> clog(const Complex<T>& c)
 	const T b = c.im;
 
 	Complex<T> res;
+#if 0
 	res.re = logHypot(a, b);
+#else
+	res.re = log(a * a + b * b) * 0.5;
+#endif
 	res.im = atan2(b, a);
 	return res;
 }
