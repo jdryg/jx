@@ -71,6 +71,8 @@ bool fsFileWrite(File* f, const char* str);
 void fsSplitPath(const char* path, char* drive, char* dir, char* filename, char* ext);
 
 char* fsLoadTextFile(BaseDir::Enum baseDir, const char* relPath, uint64_t* size, bx::AllocatorI* allocator);
+
+bool fsCopyFile(BaseDir::Enum srcBaseDir, const char* srcPath, BaseDir::Enum dstBaseDir, const char* dstPath);
 }
 
 #include "inline/fs.inl"

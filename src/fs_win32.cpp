@@ -330,6 +330,32 @@ const wchar_t* fsGetBaseDirPath(BaseDir::Enum baseDir)
 	return nullptr;
 }
 
+// TODO: Use CopyFile (https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-copyfile)
+bool fsCopyFile(BaseDir::Enum srcBaseDir, const char* srcPath, BaseDir::Enum dstBaseDir, const char* dstPath)
+{
+	File* src = fsFileOpenRead(srcBaseDir, srcPath);
+	if (!src) {
+		return false;
+	}
+
+	File* dst = fsFileOpenWrite(dstBaseDir, dstPath);
+	if (!dst) {
+		fsFileClose(src);
+		return false;
+	}
+
+	uint8_t buffer[1024];
+	uint32_t numBytes = 0;
+	while ((numBytes = fsFileReadBytes(src, buffer, 1024)) != 0) {
+		fsFileWriteBytes(dst, buffer, numBytes);
+	}
+
+	fsFileClose(dst);
+	fsFileClose(src);
+
+	return true;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Internal
 //
