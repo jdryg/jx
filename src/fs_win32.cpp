@@ -389,6 +389,7 @@ static wchar_t* getUserDataFolder(const char* appName)
 {
 	wchar_t* folder = nullptr;
 	if (FAILED(::SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &folder))) {
+		::CoTaskMemFree(folder);
 		return nullptr;
 	}
 
