@@ -89,6 +89,26 @@ void vec2fArrRemovePoint(Vec2fArray* arr, uint32_t id)
 	arr->m_Size--;
 }
 
+bool vec2fArrCalcBoundingRect(const Vec2fArray* arr, Vec2f& minPt, Vec2f& maxPt)
+{
+	const uint32_t numPoints = arr->m_Size;
+	if (numPoints == 0) {
+		return false;
+	}
+
+	minPt = arr->m_Pts[0];
+	maxPt = arr->m_Pts[0];
+	for (uint32_t i = 1; i < numPoints; ++i) {
+		const Vec2f& pt = arr->m_Pts[i];
+		minPt.x = bx::min<float>(minPt.x, pt.x);
+		minPt.y = bx::min<float>(minPt.y, pt.y);
+		maxPt.x = bx::max<float>(maxPt.x, pt.x);
+		maxPt.y = bx::max<float>(maxPt.y, pt.y);
+	}
+
+	return true;
+}
+
 bool vec2dArrInit(Vec2dArray* arr, uint32_t n, bx::AllocatorI* allocator)
 {
 	bx::memSet(arr, 0, sizeof(Vec2dArray));
