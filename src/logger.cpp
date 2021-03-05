@@ -120,7 +120,7 @@ void logf(Logger* logger, LogLevel::Enum level, const char* fmt, ...)
 //	JX_CHECK(logger->m_File != nullptr, "Logger doesn't have a valid file handle");
 #endif
 
-	static char logLine[2048];
+	static char logLine[2048] = { 0 };
 
 	const bool forceFlush = (logger->m_Flags & LoggerFlags::FlushOnEveryLog) != 0;
 	const bool appendTimestamp = (logger->m_Flags & LoggerFlags::AppendTimestamp) != 0;
