@@ -80,7 +80,7 @@ static void get2ndSlashBlock(const char* str, char* secondBlock)
 	const char* firstSlash = strchr(str, '\\');
 	const char* secondSlash = strchr(firstSlash + 1, '\\');
 	__int64 len = secondSlash - firstSlash - 1;
-	memcpy(secondBlock, firstSlash + 1, len);
+	memcpy(secondBlock, firstSlash + 1, (size_t)len);
 	secondBlock[len] = '\0';
 }
 

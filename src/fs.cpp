@@ -91,7 +91,7 @@ char* fsLoadTextFile(BaseDir::Enum baseDir, const char* relPath, uint64_t* sz, b
 	}
 
 	const uint64_t size = fsFileGetSize(f);
-	char* buffer = (char*)BX_ALLOC(allocator, size + 1);
+	char* buffer = (char*)BX_ALLOC(allocator, (size_t)(size + 1));
 	if (!buffer) {
 		fsFileClose(f);
 		return nullptr;
