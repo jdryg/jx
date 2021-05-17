@@ -154,7 +154,7 @@ static PoolChunk* allocNewPoolChunk(ObjectPool* pool)
 {
 	const uint64_t chunkSize = pool->m_ObjSize * pool->m_NumObjsPerChunk + sizeof(PoolChunk);
 
-	uint8_t* mem = (uint8_t*)BX_ALLOC(pool->m_Allocator, chunkSize);
+	uint8_t* mem = (uint8_t*)BX_ALLOC(pool->m_Allocator, (size_t)chunkSize);
 
 	PoolChunk* chunk = (PoolChunk*)mem;
 	chunk->m_MemoryBlock = mem + sizeof(PoolChunk);

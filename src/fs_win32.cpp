@@ -60,14 +60,16 @@ bool fsInit(const char* appName)
 		return false;
 	}
 
-	s_FS->m_UserDataFolder = getUserDataFolder(appName);
-	if (!s_FS->m_UserDataFolder) {
-		return false;
-	}
+	if (appName != nullptr) {
+		s_FS->m_UserDataFolder = getUserDataFolder(appName);
+		if (!s_FS->m_UserDataFolder) {
+			return false;
+		}
 
-	// Make sure user data folder exists by trying to create it.
-	if (!createDirectory(s_FS->m_UserDataFolder)) {
-		return false;
+		// Make sure user data folder exists by trying to create it.
+		if (!createDirectory(s_FS->m_UserDataFolder)) {
+			return false;
+		}
 	}
 
 	return true;
@@ -208,12 +210,12 @@ int64_t fsFileTell(File* f)
 
 bool fsFileRemove(BaseDir::Enum baseDir, const char* relPath)
 {
-	if (baseDir != BaseDir::UserData) {
+	if (baseDir != BaseDir::UserData || baseDir != BaseDir::AbsolutePath) {
 		JX_CHECK(false, "Can only remove files from user data folder");
 		return false;
 	}
 
-	if (!setCurrentDirectory(BaseDir::UserData)) {
+	if (!setCurrentDirectory(baseDir)) {
 		JX_CHECK(false, "Failed to set current working directory");
 		return false;
 	}
@@ -323,8 +325,9 @@ bool fsEnumerateFiles(BaseDir::Enum baseDir, const char* relPath, EnumerateFiles
 const wchar_t* fsGetBaseDirPath(BaseDir::Enum baseDir)
 {
 	switch (baseDir) {
-	case BaseDir::Install:  return s_FS->m_InstallFolder;
-	case BaseDir::UserData: return s_FS->m_UserDataFolder;
+	case BaseDir::Install:      return s_FS->m_InstallFolder;
+	case BaseDir::UserData:     return s_FS->m_UserDataFolder;
+	case BaseDir::AbsolutePath: return L"";
 	}
 
 	return nullptr;
@@ -425,6 +428,7 @@ static bool setCurrentDirectory(BaseDir::Enum baseDir)
 		dir = s_FS->m_InstallFolder;
 		break;
 	case BaseDir::UserData:
+		JX_CHECK(s_FS->m_UserDataFolder != nullptr, "User data folder hasn't been initialized.");
 		dir = s_FS->m_UserDataFolder;
 		break;
 	case BaseDir::AbsolutePath:

@@ -34,21 +34,23 @@ Logger* createLog(const char* name, uint32_t flags)
 	
 	bx::memSet(logger, 0, sizeof(Logger));
 
-	logger->m_Name = jx::strDup(name);
+	if (name != nullptr) {
+		logger->m_Name = jx::strDup(name);
 
 #if BX_PLATFORM_WINDOWS || BX_PLATFORM_LINUX || BX_PLATFORM_OSX || BX_PLATFORM_RPI
-	char logFilename[256];
-	bx::snprintf(logFilename, 256, "%s.log", name);
-	logger->m_File = fsFileOpenWrite(BaseDir::UserData, logFilename);
-	if (!logger->m_File) {
-		JX_CHECK(false, "Failed to open log file");
-		JX_FREE(logger);
-		return nullptr;
-	}
+		char logFilename[256];
+		bx::snprintf(logFilename, 256, "%s.log", name);
+		logger->m_File = fsFileOpenWrite(BaseDir::UserData, logFilename);
+		if (!logger->m_File) {
+			JX_CHECK(false, "Failed to open log file");
+			JX_FREE(logger);
+			return nullptr;
+		}
 #else
-	BX_UNUSED(name);
-	logger->m_File = nullptr;
+		BX_UNUSED(name);
+		logger->m_File = nullptr;
 #endif
+	}
 
 	logger->m_Flags = flags;
 
@@ -115,10 +117,10 @@ void logf(Logger* logger, LogLevel::Enum level, const char* fmt, ...)
 {
 	JX_CHECK(logger != nullptr, "Null logger passed");
 #if BX_PLATFORM_WINDOWS || BX_PLATFORM_LINUX || BX_PLATFORM_OSX || BX_PLATFORM_RPI
-	JX_CHECK(logger->m_File != nullptr, "Logger doesn't have a valid file handle");
+//	JX_CHECK(logger->m_File != nullptr, "Logger doesn't have a valid file handle");
 #endif
 
-	static char logLine[2048];
+	static char logLine[2048] = { 0 };
 
 	const bool forceFlush = (logger->m_Flags & LoggerFlags::FlushOnEveryLog) != 0;
 	const bool appendTimestamp = (logger->m_Flags & LoggerFlags::AppendTimestamp) != 0;
@@ -146,29 +148,26 @@ void logf(Logger* logger, LogLevel::Enum level, const char* fmt, ...)
 	}
 
 #if BX_PLATFORM_WINDOWS || BX_PLATFORM_LINUX || BX_PLATFORM_OSX || BX_PLATFORM_RPI
-	if (levelSymbol) {
-		fsFileWriteBytes(logger->m_File, levelSymbol, 4);
-	}
+	if (logger->m_File) {
+		if (levelSymbol) {
+			fsFileWriteBytes(logger->m_File, levelSymbol, 4);
+		}
 
-	if (appendTimestamp) {
-		char timestamp[128];
-		time_t rawtime;
-		time(&rawtime);
-		struct tm* timeinfo = localtime(&rawtime);
-		strftime(timestamp, BX_COUNTOF(timestamp), "%Y-%m-%d %H:%M:%S ", timeinfo);
+		if (appendTimestamp) {
+			char timestamp[128];
+			time_t rawtime;
+			time(&rawtime);
+			struct tm* timeinfo = localtime(&rawtime);
+			strftime(timestamp, BX_COUNTOF(timestamp), "%Y-%m-%d %H:%M:%S ", timeinfo);
 
-		fsFileWriteBytes(logger->m_File, timestamp, bx::strLen(timestamp));
-	}
+			fsFileWriteBytes(logger->m_File, timestamp, bx::strLen(timestamp));
+		}
 
-	fsFileWriteBytes(logger->m_File, logLine, bx::min<int>(logLineLen, BX_COUNTOF(logLine) - 1));
+		fsFileWriteBytes(logger->m_File, logLine, bx::min<int>(logLineLen, BX_COUNTOF(logLine) - 1));
 
-	if (forceFlush) {
-		// TODO: fflush?
-	}
-
-	const uint32_t numCallbacks = logger->m_NumCallbacks;
-	for (uint32_t i = 0; i < numCallbacks; ++i) {
-		logger->m_Callbacks[i](level, logLine);
+		if (forceFlush) {
+			// TODO: fflush?
+		}
 	}
 #else
 	BX_UNUSED(logLineLen);
@@ -190,6 +189,11 @@ void logf(Logger* logger, LogLevel::Enum level, const char* fmt, ...)
 
 	printf("%s", logLine);
 #endif
+
+	const uint32_t numCallbacks = logger->m_NumCallbacks;
+	for (uint32_t i = 0; i < numCallbacks; ++i) {
+		logger->m_Callbacks[i](level, logLine);
+	}
 
 #if BX_CONFIG_SUPPORTS_THREADING
 	if (multithreaded) {

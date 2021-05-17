@@ -88,10 +88,10 @@ void shutdownSystem()
 
 	bx::AllocatorI* systemAllocator = getSystemAllocator();
 
-	fsShutdown();
-
 	destroyLog(s_Context->m_Logger);
 	s_Context->m_Logger = nullptr;
+
+	fsShutdown();
 
 	BX_DELETE(systemAllocator, s_Context->m_FrameAllocator);
 	destroyAllocator(s_Context->m_GlobalAllocator);
