@@ -79,7 +79,7 @@ inline Complex<T> cscale(const Complex<T>& a, T s)
 template<typename T>
 inline T cabs(const Complex<T>& a)
 {
-	return sqrt(a.re * a.re + a.im * a.im);
+	return (T)sqrt(a.re * a.re + a.im * a.im);
 }
 
 template<typename T>
