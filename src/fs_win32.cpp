@@ -210,7 +210,7 @@ int64_t fsFileTell(File* f)
 
 bool fsFileRemove(BaseDir::Enum baseDir, const char* relPath)
 {
-	if (baseDir != BaseDir::UserData || baseDir != BaseDir::AbsolutePath) {
+	if (baseDir != BaseDir::UserData && baseDir != BaseDir::AbsolutePath) {
 		JX_CHECK(false, "Can only remove files from user data folder");
 		return false;
 	}
