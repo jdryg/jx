@@ -1,4 +1,5 @@
 #include <jx/math.h>
+#include <bx/allocator.h>
 
 namespace jx
 {
@@ -120,5 +121,86 @@ void interp1f(const float* x, const float* y, uint32_t n, const float* xq, float
 		const float t = (q - x[j]) / (x[j + 1] - x[j]);
 		yq[i] = bx::lerp(y[j], y[j + 1], t);
 	}
+}
+
+template<typename T>
+static bool cubicSplineInterp(const T* x, const T* y, uint32_t n, const T* resX, T* resY, uint32_t resN, bx::AllocatorI* allocator)
+{
+	const uint32_t numSplines = n - 1;
+
+	const uint32_t totalMemory = sizeof(T) * (0
+		+ numSplines // h
+		+ numSplines // A
+		+ n // l
+		+ n // u
+		+ n // z
+		+ n // a
+		+ n // b
+		+ n // c
+		+ n // d
+		);
+
+	T* buf = (T*)BX_ALLOC(allocator, totalMemory);
+	if (!buf) {
+		return false;
+	}
+
+	T* ptr = buf;
+	T* h = ptr; ptr += numSplines;
+	T* A = ptr; ptr += numSplines;
+	T* l = ptr; ptr += n;
+	T* u = ptr; ptr += n;
+	T* z = ptr; ptr += n;
+	T* a = ptr; ptr += n;
+	T* b = ptr; ptr += n;
+	T* c = ptr; ptr += n;
+	T* d = ptr; ptr += n;
+
+	for (uint32_t i = 0; i < numSplines; ++i) {
+		h[i] = x[i + 1] - x[i];
+	}
+
+	for (uint32_t i = 1; i < numSplines; ++i) {
+		A[i] = 0
+			+ T(3.0) * (y[i + 1] - y[i + 0]) / h[i + 0]
+			- T(3.0) * (y[i + 0] - y[i - 1]) / h[i - 1];
+	}
+
+	l[0] = T(1.0);
+	u[0] = T(0.0);
+	z[0] = T(0.0);
+
+	for (uint32_t i = 1; i < numSplines; ++i) {
+		l[i] = T(2.0) * (x[i + 1] - x[i - 1]) - h[i - 1] * u[i - 1];
+		u[i] = h[i] / l[i];
+		z[i] = (A[i] - h[i - 1] * z[i - 1]) / l[i];
+	}
+
+	l[numSplines] = T(1.0);
+	z[numSplines] = T(0.0);
+
+	a[numSplines] = y[numSplines];
+	c[numSplines] = T(0.0);
+	for (int32_t j = (int32_t)(numSplines - 1); j >= 0; --j) {
+		c[j] = z[j] - u[j] * c[j + 1];
+		b[j] = (y[j + 1] - y[j]) / h[j] - h[j] * (c[j + 1] + T(2.0) * c[j]) / T(3.0);
+		d[j] = (c[j + 1] - c[j]) / (T(3.0) * h[j]);
+		a[j] = y[j];
+	}
+
+	for (uint32_t i = 0; i < resN; ++i) {
+		const uint32_t splineID = locate1<T, 1>(x, n, resX[i]);
+		const T rx = resX[i] - x[splineID];
+		resY[i] = a[splineID] + rx * (b[splineID] + rx * (c[splineID] + rx * d[splineID]));
+	}
+
+	BX_FREE(allocator, buf);
+
+	return true;
+}
+
+bool cubicSplineInterp1f(const float* x, const float* y, uint32_t n, const float* resX, float* resY, uint32_t resN, bx::AllocatorI* allocator)
+{
+	return cubicSplineInterp<float>(x, y, n, resX, resY, resN, allocator);
 }
 }

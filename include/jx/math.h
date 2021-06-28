@@ -4,6 +4,11 @@
 #include <stdint.h>
 #include <bx/math.h>
 
+namespace bx
+{
+struct AllocatorI;
+}
+
 namespace jx
 {
 uint32_t nextPowerOf2(uint32_t v);
@@ -34,6 +39,8 @@ uint32_t locate2f(const float* arr, uint32_t n, float val);
 uint32_t locate2d(const double* arr, uint32_t n, double val);
 
 void interp1f(const float* x, const float* y, uint32_t n, const float* xq, float* yq, uint32_t nq);
+
+bool cubicSplineInterp1f(const float* x, const float* y, uint32_t n, const float* resX, float* resY, uint32_t resN, bx::AllocatorI* allocator);
 }
 
 #include "inline/math.inl"
