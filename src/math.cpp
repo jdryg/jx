@@ -77,6 +77,7 @@ static inline uint32_t locate1(const T* arr, uint32_t n, T val)
 	}
 
 	const bool asc = ELEM(n - 1) >= ELEM(0);
+#if 0
 	uint32_t l = 0;
 	uint32_t u = n - 1;
 	while (u - l > 1) {
@@ -89,6 +90,26 @@ static inline uint32_t locate1(const T* arr, uint32_t n, T val)
 	}
 
 	return l < n ? l : n - 1;
+#else
+	if ((asc && (ELEM(0) >= val)) || (!asc && (ELEM(0) <= val))) {
+		return 0;
+	} else if ((asc && (ELEM(n - 1) <= val)) || (!asc && (ELEM(n - 1) >= val))) {
+		return n - 2;
+	}
+
+	uint32_t l = 0;
+	uint32_t r = n;
+	while (l < r) {
+		const uint32_t m = (l + r) >> 1;
+		if ((val >= ELEM(m)) == asc) {
+			l = m + 1;
+		} else {
+			r = m;
+		}
+	}
+
+	return l - 1; // l holds the number of elements less than val.
+#endif
 #undef ELEM
 }
 
