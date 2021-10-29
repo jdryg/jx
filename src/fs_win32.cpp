@@ -16,6 +16,7 @@ struct FileSystem
 {
 	wchar_t* m_InstallFolder;
 	wchar_t* m_UserDataFolder;
+	wchar_t* m_UserAppDataFolder;
 };
 
 struct FileFlags
@@ -38,6 +39,7 @@ static FileSystem* s_FS = nullptr;
 
 static wchar_t* getInstallFolder();
 static wchar_t* getUserDataFolder(const char* appName);
+static wchar_t* getAppDataFolder(const char* appName);
 static bool createDirectory(const wchar_t* path);
 static bool setCurrentDirectory(BaseDir::Enum baseDir);
 
@@ -61,14 +63,29 @@ bool fsInit(const char* appName)
 	}
 
 	if (appName != nullptr) {
-		s_FS->m_UserDataFolder = getUserDataFolder(appName);
-		if (!s_FS->m_UserDataFolder) {
-			return false;
+		// User data folder
+		{
+			s_FS->m_UserDataFolder = getUserDataFolder(appName);
+			if (!s_FS->m_UserDataFolder) {
+				return false;
+			}
+
+			// Make sure user data folder exists by trying to create it.
+			if (!createDirectory(s_FS->m_UserDataFolder)) {
+				return false;
+			}
 		}
 
-		// Make sure user data folder exists by trying to create it.
-		if (!createDirectory(s_FS->m_UserDataFolder)) {
-			return false;
+		// App data folder
+		{
+			s_FS->m_UserAppDataFolder = getAppDataFolder(appName);
+			if (!s_FS->m_UserAppDataFolder) {
+				return false;
+			}
+
+			if (!createDirectory(s_FS->m_UserAppDataFolder)) {
+				return false;
+			}
 		}
 	}
 
@@ -81,6 +98,7 @@ void fsShutdown()
 
 	JX_FREE(s_FS->m_InstallFolder);
 	JX_FREE(s_FS->m_UserDataFolder);
+	JX_FREE(s_FS->m_UserAppDataFolder);
 	JX_FREE(s_FS);
 	s_FS = nullptr;
 }
@@ -88,6 +106,26 @@ void fsShutdown()
 bool fsIsReady()
 {
 	return s_FS != nullptr;
+}
+
+bool fsSetUserDataFolder(const char* absFolderPath)
+{
+	wchar_t utf16AbsPath[256];
+	utf8ToUtf16(absFolderPath, (uint16_t*)utf16AbsPath, BX_COUNTOF(utf16AbsPath));
+
+	const uint32_t len = (uint32_t)wcslen(utf16AbsPath);
+	wchar_t* str = (wchar_t*)JX_ALLOC(sizeof(wchar_t) * (len + 1));
+	if (!str) {
+		return false;
+	}
+
+	bx::memCopy(str, utf16AbsPath, sizeof(wchar_t) * len);
+	str[len] = L'\0';
+	
+	JX_FREE(s_FS->m_UserDataFolder);
+	s_FS->m_UserDataFolder = str;
+
+	return true;
 }
 
 File* fsFileOpenRead(BaseDir::Enum baseDir, const char* relPath)
@@ -114,8 +152,8 @@ File* fsFileOpenRead(BaseDir::Enum baseDir, const char* relPath)
 
 File* fsFileOpenWrite(BaseDir::Enum baseDir, const char* relPath)
 {
-	if (baseDir != BaseDir::UserData && baseDir != BaseDir::AbsolutePath) {
-		JX_CHECK(false, "Can only write to user data folder or absolute path");
+	if (baseDir == BaseDir::Install) {
+		JX_CHECK(false, "Cannot write in installation directory");
 		return nullptr;
 	}
 
@@ -210,8 +248,8 @@ int64_t fsFileTell(File* f)
 
 bool fsFileRemove(BaseDir::Enum baseDir, const char* relPath)
 {
-	if (baseDir != BaseDir::UserData && baseDir != BaseDir::AbsolutePath) {
-		JX_CHECK(false, "Can only remove files from user data folder");
+	if (baseDir == BaseDir::Install) {
+		JX_CHECK(false, "Cannot remove files from installation folder");
 		return false;
 	}
 
@@ -230,12 +268,12 @@ bool fsFileRemove(BaseDir::Enum baseDir, const char* relPath)
 
 bool fsCreateFolderTree(BaseDir::Enum baseDir, const char* relPath)
 {
-	if (baseDir != BaseDir::UserData) {
-		JX_CHECK(false, "Can only create subfolders inside user data folder");
+	if (baseDir != BaseDir::UserData && baseDir != BaseDir::UserAppData) {
+		JX_CHECK(false, "Can only create subfolders inside user or app data folder");
 		return false;
 	}
 
-	if (!setCurrentDirectory(BaseDir::UserData)) {
+	if (!setCurrentDirectory(baseDir)) {
 		JX_CHECK(false, "Failed to set current working directory");;
 		return false;
 	}
@@ -266,12 +304,12 @@ bool fsCreateFolderTree(BaseDir::Enum baseDir, const char* relPath)
 
 bool fsRemoveEmptyFolder(BaseDir::Enum baseDir, const char* relPath)
 {
-	if (baseDir != BaseDir::UserData) {
+	if (baseDir != BaseDir::UserData && baseDir != BaseDir::UserAppData) {
 		JX_CHECK(false, "Can only create subfolders inside user data folder");
 		return false;
 	}
 
-	if (!setCurrentDirectory(BaseDir::UserData)) {
+	if (!setCurrentDirectory(baseDir)) {
 		JX_CHECK(false, "Failed to set current working directory");;
 		return false;
 	}
@@ -327,6 +365,7 @@ const wchar_t* fsGetBaseDirPath(BaseDir::Enum baseDir)
 	switch (baseDir) {
 	case BaseDir::Install:      return s_FS->m_InstallFolder;
 	case BaseDir::UserData:     return s_FS->m_UserDataFolder;
+	case BaseDir::UserAppData:  return s_FS->m_UserAppDataFolder;
 	case BaseDir::AbsolutePath: return L"";
 	}
 
@@ -420,6 +459,38 @@ static wchar_t* getUserDataFolder(const char* appName)
 	return fullPath;
 }
 
+static wchar_t* getAppDataFolder(const char* appName)
+{
+	wchar_t* folder = nullptr;
+	if (FAILED(::SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &folder))) {
+		::CoTaskMemFree(folder);
+		return nullptr;
+	}
+
+	wchar_t utf16AppName[512];
+	utf8ToUtf16(appName, (uint16_t*)&utf16AppName[0], BX_COUNTOF(utf16AppName));
+
+	const uint32_t folderLen = (uint32_t)wcslen(folder);
+	const uint32_t appNameLen = (uint32_t)wcslen(utf16AppName);
+	const uint32_t len = folderLen + appNameLen + 2; // 2 * dir separator
+
+	wchar_t* fullPath = (wchar_t*)JX_ALLOC(sizeof(wchar_t) * (len + 1));
+	if (!fullPath) {
+		::CoTaskMemFree(folder);
+		return nullptr;
+	}
+
+	bx::memCopy(fullPath, folder, sizeof(wchar_t) * folderLen);
+	fullPath[folderLen] = '\\';
+	bx::memCopy(fullPath + folderLen + 1, utf16AppName, sizeof(wchar_t) * appNameLen);
+	fullPath[folderLen + appNameLen + 1] = '\\';
+	fullPath[folderLen + appNameLen + 2] = '\0';
+
+	::CoTaskMemFree(folder);
+
+	return fullPath;
+}
+
 static bool setCurrentDirectory(BaseDir::Enum baseDir)
 {
 	const wchar_t* dir = nullptr;
@@ -430,6 +501,10 @@ static bool setCurrentDirectory(BaseDir::Enum baseDir)
 	case BaseDir::UserData:
 		JX_CHECK(s_FS->m_UserDataFolder != nullptr, "User data folder hasn't been initialized.");
 		dir = s_FS->m_UserDataFolder;
+		break;
+	case BaseDir::UserAppData:
+		JX_CHECK(s_FS->m_UserAppDataFolder != nullptr, "App data folder hasn't been initialized.");
+		dir = s_FS->m_UserAppDataFolder;
 		break;
 	case BaseDir::AbsolutePath:
 		return true; // Nothing to do in this case.

@@ -13,6 +13,7 @@ struct BaseDir
 	{
 		Install,
 		UserData,
+		UserAppData,
 		AbsolutePath,
 	};
 };
@@ -41,6 +42,8 @@ void fsSync();
 #if BX_PLATFORM_WINDOWS
 const wchar_t* fsGetBaseDirPath(BaseDir::Enum baseDir);
 #endif
+
+bool fsSetUserDataFolder(const char* absFolderPath);
 
 File* fsFileOpenRead(BaseDir::Enum baseDir, const char* relPath);
 File* fsFileOpenWrite(BaseDir::Enum baseDir, const char* relPath);

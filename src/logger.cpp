@@ -24,7 +24,7 @@ struct Logger
 	uint32_t m_Flags;
 };
 
-Logger* createLog(const char* name, uint32_t flags)
+Logger* createLog(jx::BaseDir::Enum baseDir, const char* name, uint32_t flags)
 {
 	Logger* logger = (Logger*)JX_ALLOC(sizeof(Logger));
 	if (!logger) {
@@ -40,7 +40,7 @@ Logger* createLog(const char* name, uint32_t flags)
 #if BX_PLATFORM_WINDOWS || BX_PLATFORM_LINUX || BX_PLATFORM_OSX || BX_PLATFORM_RPI
 		char logFilename[256];
 		bx::snprintf(logFilename, 256, "%s.log", name);
-		logger->m_File = fsFileOpenWrite(BaseDir::UserData, logFilename);
+		logger->m_File = fsFileOpenWrite(baseDir, logFilename);
 		if (!logger->m_File) {
 			JX_CHECK(false, "Failed to open log file");
 			JX_FREE(logger);
@@ -115,7 +115,12 @@ void loggerUnregisterCallback(Logger* logger, uint32_t cbID)
 
 void logf(Logger* logger, LogLevel::Enum level, const char* fmt, ...)
 {
-	JX_CHECK(logger != nullptr, "Null logger passed");
+	// NOTE: This can happen when using JX_LOG_xxx macros and the system has been initialized
+	// without jx::SystemInitFlags::InitLog.
+	if (!logger) {
+		return;
+	}
+
 #if BX_PLATFORM_WINDOWS || BX_PLATFORM_LINUX || BX_PLATFORM_OSX || BX_PLATFORM_RPI
 //	JX_CHECK(logger->m_File != nullptr, "Logger doesn't have a valid file handle");
 #endif

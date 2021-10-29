@@ -59,9 +59,19 @@ namespace jx
 {
 struct Logger;
 
-bool initSystem(const char* appName);
+struct SystemInitFlags
+{
+	enum Enum : uint32_t
+	{
+		InitLog = 1u << 0
+	};
+};
+
+bool initSystem(const char* appName, uint32_t flags);
 void shutdownSystem();
 void frame();
+
+void setSystemLogger(Logger* logger);
 
 bx::AllocatorI* createAllocator(const char* name);
 void destroyAllocator(bx::AllocatorI* allocator);

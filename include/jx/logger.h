@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <jtl/delegate.h>
+#include "fs.h"
 
 namespace jx
 {
@@ -31,7 +32,7 @@ struct LoggerFlags
 
 typedef jtl::delegate<void(LogLevel::Enum level, const char* str)> LoggingCallback;
 
-Logger* createLog(const char* name, uint32_t flags);
+Logger* createLog(jx::BaseDir::Enum baseDir, const char* name, uint32_t flags);
 void destroyLog(Logger* logger);
 
 const char* loggerGetName(Logger* logger);

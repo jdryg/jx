@@ -34,7 +34,7 @@ static Context* s_Context = nullptr;
 
 static bx::AllocatorI* getSystemAllocator();
 
-bool initSystem(const char* appName)
+bool initSystem(const char* appName, uint32_t flags)
 {
 	JX_CHECK(s_Context == nullptr, "System already initialized");
 
@@ -65,10 +65,14 @@ bool initSystem(const char* appName)
 		return false;
 	}
 
-	s_Context->m_Logger = createLog(appName, LoggerFlags::AppendTimestamp | LoggerFlags::FlushOnEveryLog | LoggerFlags::Multithreaded);
-	if (!s_Context->m_Logger) {
-		JX_CHECK(false, "Failed to initialize logger");
-		return false;
+	if ((flags & SystemInitFlags::InitLog) != 0) {
+		s_Context->m_Logger = createLog(BaseDir::UserData, appName, LoggerFlags::AppendTimestamp | LoggerFlags::FlushOnEveryLog | LoggerFlags::Multithreaded);
+		if (!s_Context->m_Logger) {
+			JX_CHECK(false, "Failed to initialize logger");
+			return false;
+		}
+	} else {
+		s_Context->m_Logger = nullptr;
 	}
 
 	JX_LOG_INFO("System initialized\n");
@@ -107,6 +111,15 @@ void shutdownSystem()
 void frame()
 {
 	s_Context->m_FrameAllocator->freeAll();
+}
+
+void setSystemLogger(Logger* logger)
+{
+	if (s_Context->m_Logger) {
+		destroyLog(s_Context->m_Logger);
+	}
+
+	s_Context->m_Logger = logger;
 }
 
 bx::AllocatorI* createAllocator(const char* name)
