@@ -139,7 +139,7 @@ File* fsFileOpenRead(BaseDir::Enum baseDir, const char* relPath)
 	wchar_t utf16RelPath[512];
 	utf8ToUtf16(relPath, (uint16_t*)&utf16RelPath[0], BX_COUNTOF(utf16RelPath));
 
-	HANDLE handle = ::CreateFileW(utf16RelPath, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	HANDLE handle = ::CreateFileW(utf16RelPath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (handle == INVALID_HANDLE_VALUE) {
 		return nullptr;
 	}
@@ -165,7 +165,7 @@ File* fsFileOpenWrite(BaseDir::Enum baseDir, const char* relPath)
 	wchar_t utf16RelPath[512];
 	utf8ToUtf16(relPath, (uint16_t*)&utf16RelPath[0], BX_COUNTOF(utf16RelPath));
 
-	HANDLE handle = ::CreateFileW(utf16RelPath, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	HANDLE handle = ::CreateFileW(utf16RelPath, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (handle == INVALID_HANDLE_VALUE) {
 		return nullptr;
 	}
