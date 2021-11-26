@@ -52,6 +52,7 @@ bool initSystem(const char* appName, uint32_t flags)
 	}
 
 	// Initialize the global context
+	bx::memSet(mem, 0, totalMem);
 	s_Context = (Context*)mem;
 	s_Context->m_SystemAllocator = systemAllocator;
 	s_Context->m_GlobalAllocator = createAllocator("Global");
@@ -92,8 +93,10 @@ void shutdownSystem()
 
 	bx::AllocatorI* systemAllocator = getSystemAllocator();
 
-	destroyLog(s_Context->m_Logger);
-	s_Context->m_Logger = nullptr;
+	if (s_Context->m_Logger) {
+		destroyLog(s_Context->m_Logger);
+		s_Context->m_Logger = nullptr;
+	}
 
 	fsShutdown();
 
