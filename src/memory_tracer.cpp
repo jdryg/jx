@@ -4,6 +4,7 @@
 #include <bx/allocator.h>
 #include <bx/mutex.h>
 #include <bx/debug.h>
+#include <bx/string.h>
 
 #if BX_PLATFORM_WINDOWS
 #include <Windows.h>
