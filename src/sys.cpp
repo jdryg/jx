@@ -34,7 +34,7 @@ static Context* s_Context = nullptr;
 
 static bx::AllocatorI* getSystemAllocator();
 
-bool initSystem(const char* appName, uint32_t flags)
+bool initSystem(const char* appName, uint32_t sysFlags, uint32_t fsFlags)
 {
 	JX_CHECK(s_Context == nullptr, "System already initialized");
 
@@ -61,12 +61,12 @@ bool initSystem(const char* appName, uint32_t flags)
 	s_Context->m_FrameAllocator = BX_NEW(systemAllocator, LinearAllocator)(systemAllocator, JX_CONFIG_FRAME_ALLOCATOR_CAPACITY);
 	
 	// Initialize the filesystem
-	if (!fsInit(appName)) {
+	if (!fsInit(appName, fsFlags)) {
 		JX_CHECK(false, "Failed to initialize file system");
 		return false;
 	}
 
-	if ((flags & SystemInitFlags::InitLog) != 0) {
+	if ((sysFlags & SystemInitFlags::InitLog) != 0) {
 		s_Context->m_Logger = createLog(BaseDir::UserData, appName, LoggerFlags::AppendTimestamp | LoggerFlags::FlushOnEveryLog | LoggerFlags::Multithreaded);
 		if (!s_Context->m_Logger) {
 			JX_CHECK(false, "Failed to initialize logger");
@@ -235,25 +235,25 @@ bool getOSFriendlyName(char* str, uint32_t maxLen)
 	str[0] = '\0';
 
 	HKEY curVersionKey;
-	LONG lResult = RegOpenKeyEx(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", 0, KEY_READ, &curVersionKey);
+	LONG lResult = RegOpenKeyExA(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", 0, KEY_READ, &curVersionKey);
 	if (lResult != ERROR_SUCCESS) {
 		return false;
 	}
 
 	uint8_t buffer[1024];
 	ULONG bufferSize = 1023;
-	if (RegQueryValueEx(curVersionKey, "ProductName", nullptr, nullptr, buffer, &bufferSize) == ERROR_SUCCESS) {
+	if (RegQueryValueExA(curVersionKey, "ProductName", nullptr, nullptr, buffer, &bufferSize) == ERROR_SUCCESS) {
 		strcat_s(str, maxLen, (char*)buffer);
 	}
 
 	bufferSize = 1023;
-	if (RegQueryValueEx(curVersionKey, "CurrentBuildNumber", nullptr, nullptr, buffer, &bufferSize) == ERROR_SUCCESS) {
+	if (RegQueryValueExA(curVersionKey, "CurrentBuildNumber", nullptr, nullptr, buffer, &bufferSize) == ERROR_SUCCESS) {
 		strcat_s(str, maxLen, " Build ");
 		strcat_s(str, maxLen, (char*)buffer);
 	}
 
 	bufferSize = 1023;
-	if (RegQueryValueEx(curVersionKey, "CSDVersion", nullptr, nullptr, buffer, &bufferSize) == ERROR_SUCCESS) {
+	if (RegQueryValueExA(curVersionKey, "CSDVersion", nullptr, nullptr, buffer, &bufferSize) == ERROR_SUCCESS) {
 		strcat_s(str, maxLen, " ");
 		strcat_s(str, maxLen, (char*)buffer);
 	}

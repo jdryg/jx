@@ -67,7 +67,7 @@ struct SystemInitFlags
 	};
 };
 
-bool initSystem(const char* appName, uint32_t flags);
+bool initSystem(const char* appName, uint32_t sysFlags, uint32_t fsFlags);
 void shutdownSystem();
 void frame();
 

@@ -25,7 +25,7 @@ static bool s_FSRequiresSyncing = true;
 
 static void invalidateFileSystem();
 
-bool fsInit(const char* appName)
+bool fsInit(const char* appName, uint32_t flags)
 {
 	BX_UNUSED(appName);
 

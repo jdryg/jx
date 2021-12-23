@@ -28,11 +28,19 @@ struct SeekOrigin
 	};
 };
 
+struct FileSystemFlags
+{
+	enum Enum : uint32_t
+	{
+		AllowWritingToInstallDir = 1u << 0
+	};
+};
+
 struct File;
 
 typedef jtl::delegate<void(const char* relPath, bool isFile)> EnumerateFilesCallback;
 
-bool fsInit(const char* appName);
+bool fsInit(const char* appName, uint32_t flags);
 void fsShutdown();
 #if BX_PLATFORM_EMSCRIPTEN
 bool fsIsReady();

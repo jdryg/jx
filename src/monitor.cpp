@@ -41,14 +41,14 @@ static BOOL CALLBACK monitorEnumProc(_In_  HMONITOR hMonitor, _In_  HDC /*hdcMon
 	return TRUE;
 }
 
-static BOOL DisplayDeviceFromHMonitor(HMONITOR hMonitor, DISPLAY_DEVICE& ddMonOut)
+static BOOL DisplayDeviceFromHMonitor(HMONITOR hMonitor, DISPLAY_DEVICEA& ddMonOut)
 {
-	MONITORINFOEX mi;
-	mi.cbSize = sizeof(MONITORINFOEX);
+	MONITORINFOEXA mi;
+	mi.cbSize = sizeof(MONITORINFOEXA);
 	GetMonitorInfoA(hMonitor, &mi);
 
-	DISPLAY_DEVICE dd;
-	dd.cb = sizeof(dd);
+	DISPLAY_DEVICEA dd;
+	dd.cb = sizeof(DISPLAY_DEVICEA);
 
 	DWORD devIdx = 0; // device index
 	while (EnumDisplayDevicesA(0, devIdx, &dd, 0)) {
@@ -57,9 +57,9 @@ static BOOL DisplayDeviceFromHMonitor(HMONITOR hMonitor, DISPLAY_DEVICE& ddMonOu
 			continue;
 		}
 
-		DISPLAY_DEVICE ddMon;
-		ZeroMemory(&ddMon, sizeof(ddMon));
-		ddMon.cb = sizeof(ddMon);
+		DISPLAY_DEVICEA ddMon;
+		ZeroMemory(&ddMon, sizeof(DISPLAY_DEVICEA));
+		ddMon.cb = sizeof(DISPLAY_DEVICEA);
 		DWORD MonIdx = 0;
 		while (EnumDisplayDevicesA(dd.DeviceName, MonIdx, &ddMon, 0)) {
 			MonIdx++;
@@ -88,13 +88,13 @@ static void get2ndSlashBlock(const char* str, char* secondBlock)
 static bool GetMonitorSizeFromEDID(const HKEY hEDIDRegKey, short& WidthMm, short& HeightMm)
 {
 	DWORD dwType, AcutalValueNameLength = NAME_SIZE;
-	TCHAR valueName[NAME_SIZE];
+	CHAR valueName[NAME_SIZE];
 
 	BYTE EDIDdata[1024];
 	DWORD edidsize = sizeof(EDIDdata);
 
 	for (LONG i = 0, retValue = ERROR_SUCCESS; retValue != ERROR_NO_MORE_ITEMS; ++i) {
-		retValue = RegEnumValue(hEDIDRegKey, i, &valueName[0], &AcutalValueNameLength, NULL, &dwType, EDIDdata, &edidsize);
+		retValue = RegEnumValueA(hEDIDRegKey, i, &valueName[0], &AcutalValueNameLength, NULL, &dwType, EDIDdata, &edidsize);
 		if (retValue != ERROR_SUCCESS || 0 != strcmp(valueName, "EDID")) {
 			continue;
 		}
@@ -131,8 +131,8 @@ static bool GetSizeForDevID(const char* TargetDevID, short& WidthMm, short& Heig
 		devInfoData.cbSize = sizeof(devInfoData);
 
 		if (SetupDiEnumDeviceInfo(devInfo, i, &devInfoData)) {
-			TCHAR Instance[MAX_DEVICE_ID_LEN];
-			SetupDiGetDeviceInstanceId(devInfo, &devInfoData, Instance, MAX_PATH, NULL);
+			CHAR Instance[MAX_DEVICE_ID_LEN];
+			SetupDiGetDeviceInstanceIdA(devInfo, &devInfoData, Instance, MAX_PATH, NULL);
 
 			if (!strstr(Instance, TargetDevID)) {
 				continue;
@@ -166,7 +166,7 @@ bool getMonitorDimensions(uint16_t* width_mm, uint16_t* height_mm)
 		return false;
 	}
 
-	DISPLAY_DEVICE ddMon;
+	DISPLAY_DEVICEA ddMon;
 	if (DisplayDeviceFromHMonitor(s_PrimaryMonitorHandle, ddMon) == FALSE) {
 		*width_mm = 1;
 		*height_mm = 1;

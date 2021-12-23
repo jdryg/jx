@@ -17,6 +17,7 @@ struct FileSystem
 	wchar_t* m_InstallFolder;
 	wchar_t* m_UserDataFolder;
 	wchar_t* m_UserAppDataFolder;
+	uint32_t m_Flags;
 };
 
 struct FileFlags
@@ -43,7 +44,7 @@ static wchar_t* getAppDataFolder(const char* appName);
 static bool createDirectory(const wchar_t* path);
 static bool setCurrentDirectory(BaseDir::Enum baseDir);
 
-bool fsInit(const char* appName)
+bool fsInit(const char* appName, uint32_t flags)
 {
 	JX_CHECK(s_FS == nullptr, "FileSystem already initialized");
 
@@ -57,6 +58,7 @@ bool fsInit(const char* appName)
 
 	s_FS = (FileSystem*)mem;
 
+	s_FS->m_Flags = flags;
 	s_FS->m_InstallFolder = getInstallFolder();
 	if (!s_FS->m_InstallFolder) {
 		return false;
@@ -152,7 +154,7 @@ File* fsFileOpenRead(BaseDir::Enum baseDir, const char* relPath)
 
 File* fsFileOpenWrite(BaseDir::Enum baseDir, const char* relPath)
 {
-	if (baseDir == BaseDir::Install) {
+	if (baseDir == BaseDir::Install && (s_FS->m_Flags & FileSystemFlags::AllowWritingToInstallDir) == 0) {
 		JX_CHECK(false, "Cannot write in installation directory");
 		return nullptr;
 	}

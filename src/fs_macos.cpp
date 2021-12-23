@@ -46,7 +46,7 @@ static char* getUserDataFolder(const char* appName);
 static bool createDirectory(const char* path);
 static bool setCurrentDirectory(BaseDir::Enum baseDir);
 
-bool fsInit(const char* appName)
+bool fsInit(const char* appName, uint32_t flags)
 {
 	JX_CHECK(s_FS == nullptr, "FileSystem already initialized");
 
