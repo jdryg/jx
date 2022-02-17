@@ -2,6 +2,7 @@
 #include <jx/sys.h>
 #include <bx/platform.h>
 #include <bx/uint32_t.h>
+#include <bx/string.h>
 
 #if BX_PLATFORM_LINUX || BX_PLATFORM_OSX || BX_PLATFORM_RPI || BX_PLATFORM_EMSCRIPTEN
 #include <string.h>

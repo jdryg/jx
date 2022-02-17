@@ -1,6 +1,7 @@
 #include <jx/rand.h>
 #include <bx/bx.h>
 
+BX_PRAGMA_DIAGNOSTIC_IGNORED_MSVC(5033) // 'register' is no longer a supported storage class
 BX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG("-Wdeprecated-register")
 
 namespace jx
