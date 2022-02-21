@@ -407,7 +407,7 @@ uint32_t utf8Ellipsize(const char* src, uint32_t maxChars, char* dst, uint32_t d
 uint32_t utf8FindPrevChar(const char* str, uint32_t len, uint32_t start)
 {
 	BX_UNUSED(len);
-	JX_CHECK(start < len, "Invalid start position");
+	JX_CHECK(start <= len, "Invalid start position");
 
 	if (start == 0) {
 		return 0;
