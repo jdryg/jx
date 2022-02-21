@@ -38,10 +38,14 @@ struct Vec2dArray
 
 Vec2f vec2f(float x, float y);
 void vec2fSet(Vec2f& v, float x, float y);
+Vec2f vec2fAdd(const Vec2f& a, const Vec2f& b);
+Vec2f vec2fSub(const Vec2f& a, const Vec2f& b);
 float vec2fDistanceSqr(const Vec2f& a, const Vec2f& b);
 
 Vec2d vec2d(double x, double y);
 void vec2dSet(Vec2d& v, double x, double y);
+Vec2d vec2dAdd(const Vec2d& a, const Vec2d& b);
+Vec2d vec2dSub(const Vec2d& a, const Vec2d& b);
 double vec2dDistanceSqr(const Vec2d& a, const Vec2d& b);
 
 bool vec2fArrInit(Vec2fArray* arr, uint32_t n, bx::AllocatorI* allocator = nullptr);
