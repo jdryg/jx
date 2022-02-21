@@ -25,7 +25,9 @@
 //
 // Ryan C.Gordon <icculus@icculus.org>
 //
+#include <bx/bx.h>
 #include <jx/utf8.h>
+#include <jx/sys.h>
 
 namespace jx
 {
@@ -400,5 +402,167 @@ uint32_t utf8Ellipsize(const char* src, uint32_t maxChars, char* dst, uint32_t d
 	*dst = '\0';
 
 	return (uint32_t)(dst - dstStart);
+}
+
+uint32_t utf8FindPrevChar(const char* str, uint32_t len, uint32_t start)
+{
+	BX_UNUSED(len);
+	JX_CHECK(start < len, "Invalid start position");
+
+	if (start == 0) {
+		return 0;
+	}
+
+	uint32_t cur = start - 1;
+	while (cur > 0) {
+		if (utf8IsStartByte(str[cur])) {
+			break;
+		}
+		--cur;
+	}
+
+	return cur;
+}
+
+uint32_t utf8FindNextChar(const char* str, uint32_t len, uint32_t start)
+{
+	JX_CHECK(start < len, "Invalid start position");
+	if (start == len) {
+		return start;
+	}
+
+	const char* ptr = &str[start];
+	jx::utf8ToCodepoint(&ptr);
+	return (int)(ptr - str);
+}
+
+uint32_t utf8FindPrevWhitespace(const char* str, uint32_t len, uint32_t start)
+{
+	BX_UNUSED(len);
+	JX_CHECK(start < len, "Invalid start position");
+
+	bool noneDelimiterFound = false;
+	uint32_t cur = start - 1;
+	while (cur > 0) {
+		if (jx::utf8IsStartByte(str[cur])) {
+			const char* ptr = &str[cur];
+			const uint32_t cp = jx::utf8ToCodepoint(&ptr);
+			if (cp == ' ' || cp == '\t' || cp == '\n') {
+				if (noneDelimiterFound) {
+					break;
+				}
+			} else {
+				noneDelimiterFound = true;
+			}
+		}
+		--cur;
+	}
+
+	if (cur != 0) {
+		const char* ptr = &str[cur];
+		jx::utf8ToCodepoint(&ptr);
+		cur = (uint32_t)(ptr - str);
+	}
+
+	return cur;
+}
+
+uint32_t utf8FindNextWhitespace(const char* str, uint32_t len, uint32_t start)
+{
+	JX_CHECK(start < len, "Invalid start position");
+
+	// Skip any whitespaces
+	uint32_t numDelimiters = 0;
+	uint32_t cur = start;
+	while (cur < len) {
+		const char* ptr = &str[cur];
+		const uint32_t cp = jx::utf8ToCodepoint(&ptr);
+		if (cp != ' ' && cp != '\t' && cp != '\n') {
+			break;
+		}
+
+		++numDelimiters;
+		cur = (uint32_t)(ptr - str);
+	}
+
+	if (numDelimiters) {
+		return cur;
+	}
+
+	// Skip non-whitespaces
+	while (cur < (int)len) {
+		const char* ptr = &str[cur];
+		const uint32_t cp = jx::utf8ToCodepoint(&ptr);
+		if (cp == ' ' || cp == '\t' || cp == '\n') {
+			break;
+		}
+
+		cur = (uint32_t)(ptr - str);
+	}
+
+	// Skip trailing whitespaces
+	while (cur < len) {
+		const char* ptr = &str[cur];
+		const uint32_t cp = jx::utf8ToCodepoint(&ptr);
+		if (cp != ' ' && cp != '\t' && cp != '\n') {
+			break;
+		}
+
+		cur = (uint32_t)(ptr - str);
+	}
+
+	return cur;
+}
+
+uint32_t utf8StrLen(const char* start, const char* end)
+{
+	if (start == end) {
+		return 0;
+	}
+
+	uint32_t n = 0;
+	const char* cur = start;
+	while (*cur != '\0') {
+		jx::utf8ToCodepoint(&cur);
+		++n;
+		if (end && cur >= end) {
+			break;
+		}
+	}
+
+	return n;
+}
+
+uint32_t utf8GetCodepointPos(const char* start, const char* end, uint32_t numCodepoints)
+{
+	const char* cur = start;
+	while (numCodepoints-- > 0 && cur < end) {
+		jx::utf8ToCodepoint(&cur);
+	}
+
+	return (uint32_t)(cur - start);
+}
+
+uint32_t utf8Insert(char* buffer, uint32_t bufferLen, uint32_t bufferMaxLen, int cursor, const char* utf8, uint32_t utf8Len)
+{
+	const uint32_t numBytesToCopy = bx::min<uint32_t>(bufferMaxLen - cursor - 1, utf8Len);
+
+	JX_CHECK(bufferLen >= (uint32_t)cursor, "Invalid buffer length");
+	const uint32_t bytesAfterCursor = bufferLen - cursor + 1; // NOTE: +1 for the null char
+	bx::memMove(buffer + cursor + numBytesToCopy, buffer + cursor, bytesAfterCursor);
+	bx::memCopy(buffer + cursor, utf8, numBytesToCopy);
+
+	return numBytesToCopy;
+}
+
+uint32_t utf8Erase(char* buffer, uint32_t len, int start, int end)
+{
+	if (start == end) {
+		return 0;
+	}
+
+	const uint32_t numBytes = len - end + 1; // NOTE: +1 for the null char
+	bx::memMove(buffer + start, buffer + end, numBytes);
+	return end - start;
 }
 }
