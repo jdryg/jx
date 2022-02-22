@@ -370,13 +370,6 @@ void utf8ToUtf16(const char* src, uint16_t* dst, uint32_t len)
 	*dst = 0;
 }
 
-void utf8FromCodepoint(uint32_t cp, char* str)
-{
-	uint32_t len = 8;
-	utf8FromCodepoint(cp, &str, &len);
-	*str = '\0';
-}
-
 uint32_t utf8Ellipsize(const char* src, uint32_t maxChars, char* dst, uint32_t dstSize)
 {
 	const char* dstStart = dst;
