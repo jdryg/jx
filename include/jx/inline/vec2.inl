@@ -2,6 +2,8 @@
 #error "Must be included from jx/vec2.h"
 #endif
 
+#include "bx/math.h"
+
 namespace jx
 {
 inline Vec2f vec2f(float x, float y)
@@ -36,6 +38,24 @@ inline float vec2fDistanceSqr(const Vec2f& a, const Vec2f& b)
 	const float dx = b.x - a.x;
 	const float dy = b.y - a.y;
 	return dx * dx + dy * dy;
+}
+
+inline float vec2fDot(const Vec2f& a, const Vec2f& b)
+{
+	return a.x * b.x + a.y * b.y;
+}
+
+inline Vec2f vec2fScale(const Vec2f& v, float scale)
+{
+	return {
+		v.x * scale,
+		v.y * scale
+	};
+}
+
+inline float vec2fLength(const Vec2f& v)
+{
+	return bx::sqrt(v.x * v.x + v.y * v.y);
 }
 
 inline Vec2d vec2d(double x, double y)
