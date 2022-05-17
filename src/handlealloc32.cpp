@@ -159,6 +159,71 @@ bool ha32IsValid(HandleAlloc32* ha, uint32_t handle)
 	return true;
 }
 
+uint32_t ha32GetLastAllocatedHandle(const HandleAlloc32* ha)
+{
+	// Slots are already sorted. The last allocated handle is either the first free handle of the last slot
+	// or the last handle of the allocator.
+	const uint32_t numSlots = ha->m_NumSlots;
+	if (!numSlots) {
+		return ha->m_HandleCapacity - 1;
+	}
+
+	const FreeListSlot* lastSlot = &ha->m_Slots[numSlots - 1];
+	return (lastSlot->m_FirstHandleID + lastSlot->m_NumFreeHandles) == ha->m_HandleCapacity
+		? (lastSlot->m_FirstHandleID - 1)
+		: (ha->m_HandleCapacity - 1)
+		;
+}
+
+void ha32IterBegin(const HandleAlloc32* ha, HandleIter* iter)
+{
+	BX_UNUSED(ha);
+	iter->m_Iterator = 0;
+	iter->m_FirstHandleID = 0;
+	iter->m_LastHandleID = 0;
+}
+
+bool ha32IterNext(const HandleAlloc32* ha, HandleIter* iter)
+{
+	const uint32_t numSlots = ha->m_NumSlots;
+	const uint32_t slotID = iter->m_Iterator;
+	if (slotID == 0) {
+		// If there are no free-list slots all available handles are allocated.
+		if (!numSlots) {
+			iter->m_FirstHandleID = 0;
+			iter->m_LastHandleID = ha->m_HandleCapacity;
+			iter->m_Iterator = slotID + 1;
+		} else {
+			const FreeListSlot* slot = &ha->m_Slots[0];
+			if (slot->m_FirstHandleID == 0) {
+				iter->m_FirstHandleID = slot->m_FirstHandleID + slot->m_NumFreeHandles;
+				iter->m_LastHandleID = (numSlots > 1)
+					? ha->m_Slots[1].m_FirstHandleID
+					: ha->m_HandleCapacity
+					;
+				iter->m_Iterator++; // We already skipped slot #0.
+			} else {
+				iter->m_FirstHandleID = 0;
+				iter->m_LastHandleID = slot->m_FirstHandleID;
+			}
+
+			iter->m_Iterator++;
+		}
+	} else if (slotID > numSlots) {
+		iter->m_LastHandleID = iter->m_FirstHandleID;
+	} else {
+		const FreeListSlot* prevSlot = &ha->m_Slots[slotID - 1];
+		iter->m_FirstHandleID = prevSlot->m_FirstHandleID + prevSlot->m_NumFreeHandles;
+		iter->m_LastHandleID = slotID < numSlots
+			? ha->m_Slots[slotID].m_FirstHandleID
+			: ha->m_HandleCapacity
+			;
+		iter->m_Iterator = slotID + 1;
+	}
+
+	return iter->m_FirstHandleID < iter->m_LastHandleID;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Internal
 //
