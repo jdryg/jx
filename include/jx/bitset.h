@@ -37,6 +37,9 @@ bool bitSetGetBit(const BitSet* bs, uint32_t bit);
 void bitSetSetBit(BitSet* bs, uint32_t bit, bool val);
 void bitSetToggleBit(BitSet* bs, uint32_t bit);
 
+// A &= B
+void bitSetAnd(BitSet* a, const BitSet* b);
+
 bool bitSetIsCleared(const BitSet* bs);
 
 void bitSetIterBegin(const BitSet* bs, BitSetIter* iter, uint32_t firstBit);

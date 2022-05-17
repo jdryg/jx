@@ -58,7 +58,7 @@ BX_PRAGMA_DIAGNOSTIC_PUSH()
 BX_PRAGMA_DIAGNOSTIC_IGNORED_MSVC(4146) // unary minus operator applied to unsigned type, result still unsigned
 inline uint32_t bitSetIterNext(const BitSet* bs, BitSetIter* iter)
 {
-	while (iter->m_Bits == 0 && iter->m_QWordID < bs->m_Size) {
+	while (iter->m_Bits == 0 && iter->m_QWordID < bs->m_Size - 1) {
 		iter->m_QWordID++;
 		iter->m_Bits = bs->m_Bits[iter->m_QWordID];
 	}

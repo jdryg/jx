@@ -57,4 +57,13 @@ bool bitSetIsCleared(const BitSet* bs)
 
 	return true;
 }
+
+void bitSetAnd(BitSet* a, const BitSet* b)
+{
+	JX_CHECK(a->m_Size == b->m_Size, "BitSets should be equal in length");
+	const uint32_t sz = a->m_Size;
+	for (uint32_t i = 0; i < sz; ++i) {
+		a->m_Bits[i] &= b->m_Bits[i];
+	}
+}
 }
