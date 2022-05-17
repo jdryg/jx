@@ -49,6 +49,30 @@ inline void rectExpandToInclude(Rect* rect, float x, float y)
 	rect->m_MaxX = bx::max<float>(rect->m_MaxX, x);
 	rect->m_MaxY = bx::max<float>(rect->m_MaxY, y);
 }
+
+inline void rectInit(Rect* rect, float minx, float miny, float maxx, float maxy)
+{
+	rect->m_MinX = minx;
+	rect->m_MinY = miny;
+	rect->m_MaxX = maxx;
+	rect->m_MaxY = maxy;
+}
+
+inline void rectInitPosSize(Rect* rect, float x, float y, float w, float h)
+{
+	rect->m_MinX = x;
+	rect->m_MinY = y;
+	rect->m_MaxX = x + w;
+	rect->m_MaxY = y + h;
+}
+
+inline void rectInitCenterExtent(Rect* rect, float cx, float cy, float w, float h)
+{
+	rect->m_MinX = cx - (w * 0.5f);
+	rect->m_MinY = cy - (h * 0.5f);
+	rect->m_MaxX = cx + (w * 0.5f);
+	rect->m_MaxY = cy + (h * 0.5f);
+}
 }
 
 #endif
