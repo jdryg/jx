@@ -41,6 +41,7 @@ uint32_t locate2f(const float* arr, uint32_t n, float val);
 uint32_t locate2d(const double* arr, uint32_t n, double val);
 
 void interp1f(const float* x, const float* y, uint32_t n, const float* xq, float* yq, uint32_t nq);
+void interp1d(const double* x, const double* y, uint32_t n, const double* xq, double* yq, uint32_t nq);
 
 bool cubicSplineInterp1f(const float* x, const float* y, uint32_t n, const float* resX, float* resY, uint32_t resN, bx::AllocatorI* allocator);
 }

@@ -133,15 +133,26 @@ uint32_t locate2d(const double* arr, uint32_t n, double val)
 	return locate1<double, 2>(arr, n, val);
 }
 
-void interp1f(const float* x, const float* y, uint32_t n, const float* xq, float* yq, uint32_t nq)
+template<typename T>
+void interp1(const T* x, const T* y, uint32_t n, const T* xq, T* yq, uint32_t nq)
 {
 	for (uint32_t i = 0; i < nq; ++i) {
-		const float q = xq[i];
-		const uint32_t j = jx::locate1f(x, n, q);
+		const T q = xq[i];
+		const uint32_t j = jx::locate1<T, 1>(x, n, q);
 
-		const float t = (q - x[j]) / (x[j + 1] - x[j]);
-		yq[i] = bx::lerp(y[j], y[j + 1], t);
+		const T t = (q - x[j]) / (x[j + 1] - x[j]);
+		yq[i] = (T(1.0) - t) * y[j] + t * y[j + 1];
 	}
+}
+
+void interp1f(const float* x, const float* y, uint32_t n, const float* xq, float* yq, uint32_t nq)
+{
+	interp1<float>(x, y, n, xq, yq, nq);
+}
+
+void interp1d(const double* x, const double* y, uint32_t n, const double* xq, double* yq, uint32_t nq)
+{
+	interp1<double>(x, y, n, xq, yq, nq);
 }
 
 template<typename T>
