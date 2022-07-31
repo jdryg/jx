@@ -17,6 +17,8 @@ uint32_t bitcount(uint32_t v);
 
 float snapTo(float x, float stepSize);
 
+uint32_t solveQuadratic(const float* coefs, float* res);
+
 bool closestPointOnLineSegment(float x, float y, float sx, float sy, float ex, float ey, float thickness, float* t);
 
 void linspacef(float start, float end, float* x, uint32_t n);

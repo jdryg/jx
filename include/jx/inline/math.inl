@@ -42,4 +42,26 @@ inline uint32_t bitcount(uint32_t v)
 	}
 	return c;
 }
+
+inline uint32_t solveQuadratic(const float* coefs, float* res)
+{
+	const float a = coefs[0];
+	const float b = coefs[1];
+	const float c = coefs[2];
+
+	const float det = b * b - 4.0f * a * c;
+	if (det < 0.0f) {
+		return 0;
+	} else if (det == 0.0f) {
+		res[0] = -b / (2.0f * a);
+		res[1] = res[0];
+		return 1;
+	}
+
+	const float sqrt_det = bx::sqrt(det);
+	const float denom = 1.0f / (2.0f * a);
+	res[0] = (-b + sqrt_det) * denom;
+	res[1] = (-b - sqrt_det) * denom;
+	return 2;
+}
 }
