@@ -6,6 +6,10 @@
 #include <bx/mutex.h>
 #include <time.h>
 
+#if BX_PLATFORM_WINDOWS
+#include <Windows.h>
+#endif
+
 #if BX_PLATFORM_EMSCRIPTEN
 #include <stdio.h>
 #endif
@@ -160,10 +164,16 @@ void logf(Logger* logger, LogLevel::Enum level, const char* fmt, ...)
 
 		if (appendTimestamp) {
 			char timestamp[128];
+#if !BX_PLATFORM_WINDOWS
 			time_t rawtime;
 			time(&rawtime);
 			struct tm* timeinfo = localtime(&rawtime);
 			strftime(timestamp, BX_COUNTOF(timestamp), "%Y-%m-%d %H:%M:%S ", timeinfo);
+#else
+			SYSTEMTIME sysTime;
+			::GetSystemTime(&sysTime);
+			bx::snprintf(timestamp, BX_COUNTOF(timestamp), "%04u-%02u-%02u %02u:%02u:%02u.%03u ", sysTime.wYear, sysTime.wMonth, sysTime.wDay, sysTime.wHour, sysTime.wMinute, sysTime.wSecond, sysTime.wMilliseconds);
+#endif
 
 			fsFileWriteBytes(logger->m_File, timestamp, bx::strLen(timestamp));
 		}
