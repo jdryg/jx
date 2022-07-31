@@ -366,7 +366,7 @@ bool fsRemoveEmptyFolder(BaseDir::Enum baseDir, const char* relPath)
 	return true;
 }
 
-bool fsEnumerateFiles(BaseDir::Enum baseDir, const char* relPath, EnumerateFilesCallback callback)
+bool fsEnumerateFiles(BaseDir::Enum baseDir, const char* relPath, EnumFilesCallback callback, void* userData)
 {
 	const bool setcwdResult = setCurrentDirectory(baseDir);
 	if (!setcwdResult) {
@@ -394,7 +394,7 @@ bool fsEnumerateFiles(BaseDir::Enum baseDir, const char* relPath, EnumerateFiles
 
 		utf8FromUtf16((uint16_t*)ffd.cFileName, &utf8Filename[0], BX_COUNTOF(utf8Filename));
 
-		callback(utf8Filename, !(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY));
+		callback(utf8Filename, !(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY), userData);
 	} while (::FindNextFileW(hFind, &ffd) != 0);
 
 	const DWORD dwError = ::GetLastError();

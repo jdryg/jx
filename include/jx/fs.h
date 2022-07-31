@@ -2,8 +2,11 @@
 #define JX_FS_H
 
 #include <stdint.h>
-#include <jtl/delegate.h>
-#include <jtl/string.h> // fsFileRead<jtl::string>()
+
+namespace bx
+{
+struct AllocatorI;
+}
 
 namespace jx
 {
@@ -32,6 +35,7 @@ struct FileSystemFlags
 {
 	enum Enum : uint32_t
 	{
+		None = 0,
 		AllowWritingToInstallDir = 1u << 0
 	};
 };
@@ -59,7 +63,7 @@ struct FileTimeType
 
 struct File;
 
-typedef jtl::delegate<void(const char* relPath, bool isFile)> EnumerateFilesCallback;
+typedef void (*EnumFilesCallback)(const char* relPath, bool isFile, void* userData);
 
 bool fsInit(const char* appName, uint32_t flags);
 void fsShutdown();
@@ -91,17 +95,9 @@ bool fsMoveFile(BaseDir::Enum srcBaseDir, const char* srcPath, BaseDir::Enum dst
 bool fsCreateFolderTree(BaseDir::Enum baseDir, const char* relPath);
 bool fsRemoveEmptyFolder(BaseDir::Enum baseDir, const char* relPath);
 
-bool fsEnumerateFiles(BaseDir::Enum baseDir, const char* relPath, EnumerateFilesCallback callback);
+bool fsEnumerateFiles(BaseDir::Enum baseDir, const char* relPath, EnumFilesCallback callback, void* userData);
 
 void fsConvertStringToFilename(const char* name, char* filename, uint32_t maxLen);
-
-void fsFileReadString(File* f, char* str, uint32_t maxLen);
-bool fsFileWriteString(File* f, const char* str);
-
-template<typename T> T fsFileRead(File* f);
-template<> jtl::string fsFileRead(File* f);
-template<typename T> bool fsFileWrite(File* f, T val);
-bool fsFileWrite(File* f, const char* str);
 
 void fsSplitPath(const char* path, char* drive, char* dir, char* filename, char* ext);
 

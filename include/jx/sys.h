@@ -63,6 +63,7 @@ struct SystemInitFlags
 {
 	enum Enum : uint32_t
 	{
+		None = 0,
 		InitLog = 1u << 0
 	};
 };

@@ -1,6 +1,7 @@
 #include <jx/rand.h>
 #include <bx/bx.h>
 
+BX_PRAGMA_DIAGNOSTIC_IGNORED_MSVC(5033) // 'register' is no longer a supported storage class
 BX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG("-Wdeprecated-register")
 
 namespace jx
@@ -47,7 +48,7 @@ static inline void generate_numbers()
 	*/
 
 	static const uint32_t MATRIX[2] = { 0, 0x9908b0df };
-	register uint32_t y, i = 0;
+	uint32_t y, i = 0;
 
 	// i = [0 ... 225]
 	while (i<(DIFF - 1)) {
@@ -123,7 +124,7 @@ void seed(uint32_t value)
 	MT[0] = value;
 	index = 0;
 
-	for (register unsigned i = 1; i<SIZE; ++i)
+	for (unsigned i = 1; i<SIZE; ++i)
 		MT[i] = 0x6c078965 * (MT[i - 1] ^ MT[i - 1] >> 30) + i;
 }
 
@@ -132,7 +133,7 @@ uint32_t rand_u32()
 	if (!index)
 		generate_numbers();
 
-	register uint32_t y = MT[index];
+	uint32_t y = MT[index];
 
 	// Tempering
 	y ^= y >> 11;
@@ -148,32 +149,32 @@ uint32_t rand_u32()
 
 float randf_cc()
 {
-	return static_cast<float>(rand_u32()) / UINT32_MAX;
+	return static_cast<float>(rand_u32()) / (float)UINT32_MAX;
 }
 
 float randf_co()
 {
-	return static_cast<float>(rand_u32()) / (UINT32_MAX + 1.0f);
+	return static_cast<float>(rand_u32()) / ((float)UINT32_MAX + 1.0f);
 }
 
 float randf_oo()
 {
-	return (static_cast<float>(rand_u32()) + 0.5f) / (UINT32_MAX + 1.0f);
+	return (static_cast<float>(rand_u32()) + 0.5f) / ((float)UINT32_MAX + 1.0f);
 }
 
 double randd_cc()
 {
-	return static_cast<double>(rand_u32()) / UINT32_MAX;
+	return static_cast<double>(rand_u32()) / (double)UINT32_MAX;
 }
 
 double randd_co()
 {
-	return static_cast<double>(rand_u32()) / (UINT32_MAX + 1.0);
+	return static_cast<double>(rand_u32()) / ((double)UINT32_MAX + 1.0);
 }
 
 double randd_oo()
 {
-	return (static_cast<double>(rand_u32()) + 0.5) / (UINT32_MAX + 1.0);
+	return (static_cast<double>(rand_u32()) + 0.5) / ((double)UINT32_MAX + 1.0);
 }
 
 uint64_t rand_u64()

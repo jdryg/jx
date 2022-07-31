@@ -74,6 +74,22 @@ inline void vec2dSet(Vec2d& v, double x, double y)
 	v.y = y;
 }
 
+inline Vec2d vec2dAdd(const Vec2d& a, const Vec2d& b)
+{
+	return {
+		a.x + b.x,
+		a.y + b.y
+	};
+}
+
+inline Vec2d vec2dSub(const Vec2d& a, const Vec2d& b)
+{
+	return {
+		a.x - b.x,
+		a.y - b.y
+	};
+}
+
 inline double vec2dDistanceSqr(const Vec2d& a, const Vec2d& b)
 {
 	const double dx = b.x - a.x;

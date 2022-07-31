@@ -149,8 +149,18 @@ void memTracerShutdown()
 uint16_t memTracerCreateAllocator(const char* name)
 {
 	JX_CHECK(s_MemTracer != nullptr, "Memory tracer hasn't been initialized");
-
 	MemTracer* ctx = s_MemTracer;
+
+	// Check if an allocator with the same name already exists.
+	const uint32_t numAllocators = (uint32_t)ctx->m_NumAllocators;
+	for (uint32_t i = 0; i < numAllocators; ++i) {
+		AllocatorInfo* ai = &ctx->m_Allocators[i];
+		if (!bx::strCmp(ai->m_Name, name)) {
+			JX_CHECK(!ai->m_IsAlive, "An allocator with the same name is already initialized and still alive.");
+			ai->m_IsAlive = true;
+			return (uint16_t)i;
+		}
+	}
 
 	ctx->m_Allocators = (AllocatorInfo*)BX_REALLOC(ctx->m_Allocator, ctx->m_Allocators, sizeof(AllocatorInfo) * (ctx->m_NumAllocators + 1));
 

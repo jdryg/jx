@@ -432,7 +432,7 @@ void rectIntersectBitset(const RectSoA* soa, uint32_t numRects, const Rect* test
 		miny += 8;
 		maxx += 8;
 		maxy += 8;
-}
+	}
 
 	uint32_t rem = numRects & 7;
 	if (rem) {

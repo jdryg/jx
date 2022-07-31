@@ -16,6 +16,13 @@
 
 namespace jx
 {
+struct CallbackData
+{
+	LoggingCallback m_Func;
+	void* m_UserData;
+	bool m_Active;
+};
+
 struct Logger
 {
 	char* m_Name;
@@ -23,7 +30,7 @@ struct Logger
 #if BX_CONFIG_SUPPORTS_THREADING
 	bx::Mutex* m_Mutex;
 #endif
-	LoggingCallback* m_Callbacks;
+	CallbackData* m_Callbacks;
 	uint32_t m_NumCallbacks;
 	uint32_t m_Flags;
 };
@@ -95,26 +102,34 @@ const char* loggerGetName(Logger* logger)
 	return logger->m_Name;
 }
 
-uint32_t loggerRegisterCallback(Logger* logger, LoggingCallback cb)
+uint32_t loggerRegisterCallback(Logger* logger, LoggingCallback cb, void* userData)
 {
-	LoggingCallback* newCallbacks = (LoggingCallback*)JX_REALLOC(logger->m_Callbacks, sizeof(LoggingCallback) * (logger->m_NumCallbacks + 1));
+	const uint32_t oldCapacity = logger->m_NumCallbacks;
+	const uint32_t newCapacity = oldCapacity + 1;
+	CallbackData* newCallbacks = (CallbackData*)JX_ALLOC(sizeof(CallbackData) * newCapacity);
 	if (!newCallbacks) {
 		return UINT32_MAX;
 	}
 
-	const uint32_t cbID = logger->m_NumCallbacks;
-	BX_PLACEMENT_NEW(&newCallbacks[cbID], LoggingCallback)(cb);
-
+	bx::memCopy(newCallbacks, logger->m_Callbacks, sizeof(CallbackData) * oldCapacity);
+	bx::memSet(&newCallbacks[oldCapacity], 0, sizeof(CallbackData));
+	
+	JX_FREE(logger->m_Callbacks);
 	logger->m_Callbacks = newCallbacks;
-	++logger->m_NumCallbacks;
+	logger->m_NumCallbacks = newCapacity;
+
+	const uint32_t cbID = oldCapacity;
+	CallbackData* cbData = &logger->m_Callbacks[cbID];
+	cbData->m_Func = cb;
+	cbData->m_UserData = userData;
+	cbData->m_Active = true;
 
 	return cbID;
 }
 
 void loggerUnregisterCallback(Logger* logger, uint32_t cbID)
 {
-	BX_UNUSED(logger, cbID);
-	JX_CHECK(false, "Not implemented");
+	logger->m_Callbacks[cbID].m_Active = false;
 }
 
 void logf(Logger* logger, LogLevel::Enum level, const char* fmt, ...)
@@ -207,7 +222,10 @@ void logf(Logger* logger, LogLevel::Enum level, const char* fmt, ...)
 
 	const uint32_t numCallbacks = logger->m_NumCallbacks;
 	for (uint32_t i = 0; i < numCallbacks; ++i) {
-		logger->m_Callbacks[i](level, logLine);
+		CallbackData* cb = &logger->m_Callbacks[i];
+		if (cb->m_Active) {
+			cb->m_Func(level, logLine, cb->m_UserData);
+		}
 	}
 
 #if BX_CONFIG_SUPPORTS_THREADING
