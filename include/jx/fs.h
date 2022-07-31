@@ -36,6 +36,27 @@ struct FileSystemFlags
 	};
 };
 
+struct FileTime
+{
+	uint16_t m_Year;
+	uint16_t m_Month;
+	uint16_t m_Day;
+	uint16_t m_Hour;
+	uint16_t m_Minute;
+	uint16_t m_Second;
+	uint16_t m_Millisecond;
+};
+
+struct FileTimeType
+{
+	enum Enum : uint32_t
+	{
+		Creation,
+		LastAccess,
+		LastWrite
+	};
+};
+
 struct File;
 
 typedef jtl::delegate<void(const char* relPath, bool isFile)> EnumerateFilesCallback;
@@ -61,8 +82,11 @@ uint32_t fsFileWriteBytes(File* f, const void* buffer, uint32_t len);
 uint64_t fsFileGetSize(File* f);
 void fsFileSeek(File* f, int64_t offset, SeekOrigin::Enum origin);
 int64_t fsFileTell(File* f);
+bool fsFileGetTime(File* f, jx::FileTimeType::Enum type, FileTime* t);
 
-bool fsFileRemove(BaseDir::Enum baseDir, const char* relPath);
+bool fsRemoveFile(BaseDir::Enum baseDir, const char* relPath);
+bool fsCopyFile(BaseDir::Enum srcBaseDir, const char* srcPath, BaseDir::Enum dstBaseDir, const char* dstPath);
+bool fsMoveFile(BaseDir::Enum srcBaseDir, const char* srcPath, BaseDir::Enum dstBaseDir, const char* dstPath);
 
 bool fsCreateFolderTree(BaseDir::Enum baseDir, const char* relPath);
 bool fsRemoveEmptyFolder(BaseDir::Enum baseDir, const char* relPath);
@@ -82,8 +106,6 @@ bool fsFileWrite(File* f, const char* str);
 void fsSplitPath(const char* path, char* drive, char* dir, char* filename, char* ext);
 
 char* fsLoadTextFile(BaseDir::Enum baseDir, const char* relPath, uint64_t* size, bx::AllocatorI* allocator);
-
-bool fsCopyFile(BaseDir::Enum srcBaseDir, const char* srcPath, BaseDir::Enum dstBaseDir, const char* dstPath);
 }
 
 #include "inline/fs.inl"

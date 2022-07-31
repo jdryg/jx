@@ -9,6 +9,7 @@
 
 #include <Windows.h>
 #include <Shlobj.h>
+#include <strsafe.h>
 
 namespace jx
 {
@@ -248,7 +249,48 @@ int64_t fsFileTell(File* f)
 	return (int64_t)((uint64_t)offsetLow | ((uint64_t)distanceHigh << 32));
 }
 
-bool fsFileRemove(BaseDir::Enum baseDir, const char* relPath)
+bool fsFileGetTime(File* f, jx::FileTimeType::Enum type, FileTime* t)
+{
+	FILETIME creationTime, lastAccessTime, lastWriteTime;
+	BOOL res = ::GetFileTime(f->m_Handle, &creationTime, &lastAccessTime, &lastWriteTime);
+	if (!res) {
+		return false;
+	}
+
+	FILETIME* srcTime = nullptr;
+	switch (type) {
+	case FileTimeType::Creation:
+		srcTime = &creationTime;
+		break;
+	case FileTimeType::LastAccess:
+		srcTime = &lastAccessTime;
+		break;
+	case FileTimeType::LastWrite:
+		srcTime = &lastWriteTime;
+		break;
+	default:
+		JX_CHECK(false, "Unknown FileTimeType");
+		break;
+	}
+
+	if (!srcTime) {
+		return false;
+	}
+
+	SYSTEMTIME systemTime;
+	::FileTimeToSystemTime(srcTime, &systemTime);
+	t->m_Year = systemTime.wYear;
+	t->m_Month = systemTime.wMonth;
+	t->m_Day = systemTime.wDay;
+	t->m_Hour = systemTime.wHour;
+	t->m_Minute = systemTime.wMinute;
+	t->m_Second = systemTime.wSecond;
+	t->m_Millisecond = systemTime.wMilliseconds;
+
+	return true;
+}
+
+bool fsRemoveFile(BaseDir::Enum baseDir, const char* relPath)
 {
 	if (baseDir == BaseDir::Install) {
 		JX_CHECK(false, "Cannot remove files from installation folder");
@@ -374,9 +416,33 @@ const wchar_t* fsGetBaseDirPath(BaseDir::Enum baseDir)
 	return nullptr;
 }
 
-// TODO: Use CopyFile (https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-copyfile)
 bool fsCopyFile(BaseDir::Enum srcBaseDir, const char* srcPath, BaseDir::Enum dstBaseDir, const char* dstPath)
 {
+#if 1
+	wchar_t srcAbsPathW[256];
+	if (srcBaseDir != BaseDir::AbsolutePath) {
+		const wchar_t* srcBaseDirPath = fsGetBaseDirPath(srcBaseDir);
+
+		wchar_t srcPathW[256];
+		utf8ToUtf16(srcPath, (uint16_t*)srcPathW, BX_COUNTOF(srcPathW));
+		::StringCbPrintfW(srcAbsPathW, BX_COUNTOF(srcAbsPathW), L"%s\\%s", srcBaseDirPath, srcPathW);
+	} else {
+		utf8ToUtf16(srcPath, (uint16_t*)srcAbsPathW, BX_COUNTOF(srcAbsPathW));
+	}
+
+	wchar_t dstAbsPathW[256];
+	if (dstBaseDir != BaseDir::AbsolutePath) {
+		const wchar_t* dstBaseDirPath = fsGetBaseDirPath(dstBaseDir);
+
+		wchar_t dstPathW[256];
+		utf8ToUtf16(dstPath, (uint16_t*)dstPathW, BX_COUNTOF(dstPathW));
+		::StringCbPrintfW(dstAbsPathW, BX_COUNTOF(dstAbsPathW), L"%s\\%s", dstBaseDirPath, dstPathW);
+	} else {
+		utf8ToUtf16(dstPath, (uint16_t*)dstAbsPathW, BX_COUNTOF(dstAbsPathW));
+	}
+
+	return ::CopyFileW(srcAbsPathW, dstAbsPathW, FALSE) != FALSE;
+#else
 	File* src = fsFileOpenRead(srcBaseDir, srcPath);
 	if (!src) {
 		return false;
@@ -398,6 +464,44 @@ bool fsCopyFile(BaseDir::Enum srcBaseDir, const char* srcPath, BaseDir::Enum dst
 	fsFileClose(src);
 
 	return true;
+#endif
+}
+
+// TODO: Use MoveFile (https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-movefile)
+bool fsMoveFile(BaseDir::Enum srcBaseDir, const char* srcPath, BaseDir::Enum dstBaseDir, const char* dstPath)
+{
+#if 1
+	wchar_t srcAbsPathW[256];
+	if (srcBaseDir != BaseDir::AbsolutePath) {
+		const wchar_t* srcBaseDirPath = fsGetBaseDirPath(srcBaseDir);
+
+		wchar_t srcPathW[256];
+		utf8ToUtf16(srcPath, (uint16_t*)srcPathW, BX_COUNTOF(srcPathW));
+		::StringCbPrintfW(srcAbsPathW, BX_COUNTOF(srcAbsPathW), L"%s\\%s", srcBaseDirPath, srcPathW);
+	} else {
+		utf8ToUtf16(srcPath, (uint16_t*)srcAbsPathW, BX_COUNTOF(srcAbsPathW));
+	}
+
+	wchar_t dstAbsPathW[256];
+	if (dstBaseDir != BaseDir::AbsolutePath) {
+		const wchar_t* dstBaseDirPath = fsGetBaseDirPath(dstBaseDir);
+
+		wchar_t dstPathW[256];
+		utf8ToUtf16(dstPath, (uint16_t*)dstPathW, BX_COUNTOF(dstPathW));
+		::StringCbPrintfW(dstAbsPathW, BX_COUNTOF(dstAbsPathW), L"%s\\%s", dstBaseDirPath, dstPathW);
+	} else {
+		utf8ToUtf16(dstPath, (uint16_t*)dstAbsPathW, BX_COUNTOF(dstAbsPathW));
+	}
+
+	return ::MoveFileW(srcAbsPathW, dstAbsPathW) != FALSE;
+#else
+	if (!fsCopyFile(srcBaseDir, srcPath, dstBaseDir, dstPath)) {
+		return false;
+	}
+	
+	fsRemoveFile(srcBaseDir, srcPath);
+	return true;
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
