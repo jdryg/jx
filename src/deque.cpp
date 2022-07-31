@@ -33,6 +33,7 @@ Deque* createDeque(bx::AllocatorI* allocator, uint32_t itemSize)
 	bx::memSet(dq, 0, sizeof(Deque));
 	dq->m_Allocator = allocator;
 	dq->m_ItemSize = itemSize;
+	dq->m_ItemBufferNextFreeSlotID = UINT32_MAX;
 
 	return dq;
 }
@@ -148,8 +149,8 @@ static uint32_t deque_allocItem(Deque* dq, const void* item)
 	}
 
 	const uint32_t freeSlot = dq->m_ItemBufferNextFreeSlotID;
-	const uint32_t bufferID = (freeSlot % DEQUE_CONFIG_ITEMS_PER_BUFFER);
-	const uint32_t slotID = freeSlot - (bufferID * DEQUE_CONFIG_ITEMS_PER_BUFFER);
+	const uint32_t slotID = freeSlot % DEQUE_CONFIG_ITEMS_PER_BUFFER;
+	const uint32_t bufferID = freeSlot / DEQUE_CONFIG_ITEMS_PER_BUFFER;
 	uint8_t* buffer = dq->m_ItemBuffers[bufferID];
 	uint8_t* ptr = buffer + slotID * dq->m_ItemSize;
 	
@@ -163,8 +164,8 @@ static uint32_t deque_allocItem(Deque* dq, const void* item)
 
 static void deque_freeItem(Deque* dq, uint32_t itemID)
 {
-	const uint32_t bufferID = (itemID % DEQUE_CONFIG_ITEMS_PER_BUFFER);
-	const uint32_t slotID = itemID - (bufferID * DEQUE_CONFIG_ITEMS_PER_BUFFER);
+	const uint32_t slotID = itemID % DEQUE_CONFIG_ITEMS_PER_BUFFER;
+	const uint32_t bufferID = itemID / DEQUE_CONFIG_ITEMS_PER_BUFFER;
 	uint8_t* buffer = dq->m_ItemBuffers[bufferID];
 	uint8_t* ptr = buffer + slotID * dq->m_ItemSize;
 
@@ -215,8 +216,8 @@ static uint32_t deque_getItemID(Deque* dq, uint32_t pos)
 
 static const void* deque_getItem(Deque* dq, uint32_t itemID)
 {
-	const uint32_t bufferID = (itemID % DEQUE_CONFIG_ITEMS_PER_BUFFER);
-	const uint32_t slotID = itemID - (bufferID * DEQUE_CONFIG_ITEMS_PER_BUFFER);
+	const uint32_t slotID = itemID % DEQUE_CONFIG_ITEMS_PER_BUFFER;
+	const uint32_t bufferID = itemID / DEQUE_CONFIG_ITEMS_PER_BUFFER;
 	uint8_t* buffer = dq->m_ItemBuffers[bufferID];
 	return buffer + slotID * dq->m_ItemSize;
 }
