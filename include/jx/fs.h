@@ -2,6 +2,7 @@
 #define JX_FS_H
 
 #include <stdint.h>
+#include <bx/platform.h>
 
 namespace bx
 {
