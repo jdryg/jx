@@ -186,7 +186,11 @@ void logf(Logger* logger, LogLevel::Enum level, const char* fmt, ...)
 			strftime(timestamp, BX_COUNTOF(timestamp), "%Y-%m-%d %H:%M:%S ", timeinfo);
 #else
 			SYSTEMTIME sysTime;
+#if 0
 			::GetSystemTime(&sysTime);
+#else
+			::GetLocalTime(&sysTime);
+#endif
 			bx::snprintf(timestamp, BX_COUNTOF(timestamp), "%04u-%02u-%02u %02u:%02u:%02u.%03u ", sysTime.wYear, sysTime.wMonth, sysTime.wDay, sysTime.wHour, sysTime.wMinute, sysTime.wSecond, sysTime.wMilliseconds);
 #endif
 

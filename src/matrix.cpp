@@ -63,7 +63,7 @@ bool matfLUPDecompose(jx::Matrixf* A, uint32_t* P, uint32_t* numPivots)
 			}
 		}
 
-		if (maxA < bx::kFloatMin) {
+		if (maxA < bx::kFloatSmallest) {
 			return false; // failure, matrix is degenerate
 		}
 

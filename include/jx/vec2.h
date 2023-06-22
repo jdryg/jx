@@ -51,6 +51,10 @@ void vec2dSet(Vec2d& v, double x, double y);
 Vec2d vec2dAdd(const Vec2d& a, const Vec2d& b);
 Vec2d vec2dSub(const Vec2d& a, const Vec2d& b);
 double vec2dDistanceSqr(const Vec2d& a, const Vec2d& b);
+double vec2dDot(const Vec2d& a, const Vec2d& b);
+Vec2d vec2dScale(const Vec2d& v, double scale);
+double vec2dLength(const Vec2d& v);
+double vec2dCross(const Vec2d& a, const Vec2d& b);
 
 bool vec2fArrInit(Vec2fArray* arr, uint32_t n, bx::AllocatorI* allocator = nullptr);
 void vec2fArrDestroy(Vec2fArray* arr);
@@ -59,11 +63,13 @@ bool vec2fArrFromScalar(Vec2fArray* arr, const float* x, const float* y, uint32_
 uint32_t vec2fArrClosestPoint(const Vec2fArray* arr, const Vec2f& v, float* dist);
 void vec2fArrRemovePoint(Vec2fArray* arr, uint32_t id);
 bool vec2fArrCalcBoundingRect(const Vec2fArray* arr, Vec2f& minPt, Vec2f& maxPt);
+bool vec2fArrPushBack(Vec2fArray* arr, const Vec2f& pt);
 
 bool vec2dArrInit(Vec2dArray* arr, uint32_t n, bx::AllocatorI* allocator = nullptr);
 void vec2dArrDestroy(Vec2dArray* arr);
 bool vec2dArrResize(Vec2dArray* arr, uint32_t n);
 bool vec2dArrFromScalar(Vec2dArray* arr, const double* x, const double* y, uint32_t n);
+bool vec2dArrCalcBoundingRect(const Vec2dArray* arr, Vec2d& minPt, Vec2d& maxPt);
 
 bool vec2Arrd2f(Vec2fArray* dst, const Vec2dArray* src);
 }

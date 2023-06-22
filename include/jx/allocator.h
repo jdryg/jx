@@ -60,9 +60,9 @@ inline void deleteArray(bx::AllocatorI* allocator, ObjectT* ptr, size_t align = 
 #define JX_ALIGNED_REALLOC(_ptr, _size, _align)      BX_ALIGNED_REALLOC(jx::getGlobalAllocator(), _ptr, _size, _align)
 #define JX_ALIGNED_FREE(_ptr, _align)                BX_ALIGNED_FREE(jx::getGlobalAllocator(), _ptr, _align)
 #define JX_NEW(_type)                                BX_PLACEMENT_NEW(JX_ALLOC(sizeof(_type)), _type)
-#define JX_DELETE(_ptr)                              bx::deleteObject(jx::getGlobalAllocator(), _ptr, 0, __FILE__, __LINE__)
+#define JX_DELETE(_ptr)                              bx::deleteObject(jx::getGlobalAllocator(), _ptr, 0)
 #define JX_ALIGNED_NEW(_type, _align)                BX_PLACEMENT_NEW(JX_ALIGNED_ALLOC(sizeof(_type), _align), _type)
-#define JX_ALIGNED_DELETE(_ptr, _align)              bx::deleteObject(jx::getGlobalAllocator(), _ptr, _align, __FILE__, __LINE__)
+#define JX_ALIGNED_DELETE(_ptr, _align)              bx::deleteObject(jx::getGlobalAllocator(), _ptr, _align)
 #define JX_NEW_ARRAY(_type, size)                    jx::allocArray<_type>(jx::getGlobalAllocator(), size, 0, __FILE__, __LINE__)
 #define JX_DELETE_ARRAY(_ptr)                        jx::deleteArray(jx::getGlobalAllocator(), _ptr, 0, __FILE__, __LINE__)
 

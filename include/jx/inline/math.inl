@@ -2,6 +2,8 @@
 #error "Must be included from jx/math.h"
 #endif
 
+#include <math.h>
+
 namespace jx
 {
 inline uint32_t nextPowerOf2(uint32_t v)
@@ -63,5 +65,30 @@ inline uint32_t solveQuadratic(const float* coefs, float* res)
 	res[0] = (-b + sqrt_det) * denom;
 	res[1] = (-b - sqrt_det) * denom;
 	return 2;
+}
+
+inline double toDeg(double rad)
+{
+	return rad * 180.0 / kPid;
+}
+
+inline double toRad(double deg)
+{
+	return deg * kPid / 180.0;
+}
+
+inline double mod(double _a, double _b)
+{
+	return _a - _b * floor(_a / _b);
+}
+
+inline double wrap(double _a, double _wrap)
+{
+	const double tmp0 = mod(_a, _wrap);
+	const double result = tmp0 < 0.0 
+		? _wrap + tmp0 
+		: tmp0
+		;
+	return result;
 }
 }

@@ -11,6 +11,8 @@ struct AllocatorI;
 
 namespace jx
 {
+static const double kPid = 3.1415926535897932384626433832795;
+
 uint32_t nextPowerOf2(uint32_t v);
 uint32_t log2ui(uint32_t v);
 uint32_t bitcount(uint32_t v);
@@ -44,6 +46,10 @@ void interp1f(const float* x, const float* y, uint32_t n, const float* xq, float
 void interp1d(const double* x, const double* y, uint32_t n, const double* xq, double* yq, uint32_t nq);
 
 bool cubicSplineInterp1f(const float* x, const float* y, uint32_t n, const float* resX, float* resY, uint32_t resN, bx::AllocatorI* allocator);
+
+double toDeg(double rad);
+double toRad(double deg);
+double wrap(double _a, double _wrap);
 }
 
 #include "inline/math.inl"

@@ -3,6 +3,7 @@
 #endif
 
 #include <bx/math.h>
+#include <math.h>
 
 namespace jx
 {
@@ -95,5 +96,28 @@ inline double vec2dDistanceSqr(const Vec2d& a, const Vec2d& b)
 	const double dx = b.x - a.x;
 	const double dy = b.y - a.y;
 	return dx * dx + dy * dy;
+}
+
+inline double vec2dDot(const Vec2d& a, const Vec2d& b)
+{
+	return a.x * b.x + a.y * b.y;
+}
+
+inline Vec2d vec2dScale(const Vec2d& v, double scale)
+{
+	return {
+		v.x * scale,
+		v.y * scale
+	};
+}
+
+inline double vec2dLength(const Vec2d& v)
+{
+	return sqrt(v.x * v.x + v.y * v.y);
+}
+
+inline double vec2dCross(const Vec2d& a, const Vec2d& b)
+{
+	return a.x * b.y - a.y * b.x;
 }
 }

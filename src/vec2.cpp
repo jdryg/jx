@@ -61,7 +61,7 @@ bool vec2fArrFromScalar(Vec2fArray* arr, const float* x, const float* y, uint32_
 
 uint32_t vec2fArrClosestPoint(const Vec2fArray* arr, const Vec2f& v, float* dist)
 {
-	float closestDistSqr = bx::kFloatMax;
+	float closestDistSqr = bx::kFloatLargest;
 	uint32_t closestID = UINT32_MAX;
 
 	const uint32_t n = arr->m_Size;
@@ -105,6 +105,31 @@ bool vec2fArrCalcBoundingRect(const Vec2fArray* arr, Vec2f& minPt, Vec2f& maxPt)
 		maxPt.x = bx::max<float>(maxPt.x, pt.x);
 		maxPt.y = bx::max<float>(maxPt.y, pt.y);
 	}
+
+	return true;
+}
+
+bool vec2fArrPushBack(Vec2fArray* arr, const Vec2f& pt)
+{
+	if (arr->m_Size == arr->m_Capacity) {
+		const uint32_t oldCapacity = arr->m_Capacity;
+		const uint32_t newCapacity = oldCapacity + 32;
+
+		jx::Vec2f* newPts = (jx::Vec2f*)BX_ALIGNED_ALLOC(arr->m_Allocator, sizeof(jx::Vec2f) * newCapacity, 16);
+		if (!newPts) {
+			return false;
+		}
+
+		bx::memCopy(newPts, arr->m_Pts, sizeof(jx::Vec2f) * oldCapacity);
+		bx::memSet(&newPts[oldCapacity], 0, sizeof(jx::Vec2f) * (newCapacity - oldCapacity));
+
+		BX_ALIGNED_FREE(arr->m_Allocator, arr->m_Pts, 16);
+		arr->m_Pts = newPts;
+		arr->m_Capacity = newCapacity;
+	}
+
+	arr->m_Pts[arr->m_Size] = pt;
+	arr->m_Size++;
 
 	return true;
 }
@@ -177,6 +202,26 @@ bool vec2Arrd2f(Vec2fArray* dst, const Vec2dArray* src)
 		dstPts->y = (float)srcPts->y;
 		++dstPts;
 		++srcPts;
+	}
+
+	return true;
+}
+
+bool vec2dArrCalcBoundingRect(const Vec2dArray* arr, Vec2d& minPt, Vec2d& maxPt)
+{
+	const uint32_t numPoints = arr->m_Size;
+	if (numPoints == 0) {
+		return false;
+	}
+
+	minPt = arr->m_Pts[0];
+	maxPt = arr->m_Pts[0];
+	for (uint32_t i = 1; i < numPoints; ++i) {
+		const Vec2d& pt = arr->m_Pts[i];
+		minPt.x = bx::min<double>(minPt.x, pt.x);
+		minPt.y = bx::min<double>(minPt.y, pt.y);
+		maxPt.x = bx::max<double>(maxPt.x, pt.x);
+		maxPt.y = bx::max<double>(maxPt.y, pt.y);
 	}
 
 	return true;
