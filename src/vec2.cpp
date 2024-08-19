@@ -27,7 +27,14 @@ void vec2fArrDestroy(Vec2fArray* arr)
 bool vec2fArrResize(Vec2fArray* arr, uint32_t n)
 {
 	if (n > arr->m_Capacity) {
-		Vec2f* newPts = (Vec2f*)BX_ALIGNED_ALLOC(arr->m_Allocator, sizeof(Vec2f) * n, 16);
+		const uint32_t oldCapacity = arr->m_Capacity;
+		const uint32_t newCapacity_auto = oldCapacity != 0
+			? (oldCapacity * 3) / 2
+			: n
+			;
+		const uint32_t newCapacity = bx::max<uint32_t>(n, newCapacity_auto);
+
+		Vec2f* newPts = (Vec2f*)BX_ALIGNED_ALLOC(arr->m_Allocator, sizeof(Vec2f) * newCapacity, 16);
 		if (newPts == nullptr) {
 			return false;
 		}
@@ -36,7 +43,7 @@ bool vec2fArrResize(Vec2fArray* arr, uint32_t n)
 
 		BX_ALIGNED_FREE(arr->m_Allocator, arr->m_Pts, 16);
 		arr->m_Pts = newPts;
-		arr->m_Capacity = n;
+		arr->m_Capacity = newCapacity;
 	}
 
 	arr->m_Size = n;

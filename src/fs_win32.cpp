@@ -305,9 +305,7 @@ bool fsRemoveFile(BaseDir::Enum baseDir, const char* relPath)
 	wchar_t utf16RelPath[512];
 	utf8ToUtf16(relPath, (uint16_t*)&utf16RelPath[0], BX_COUNTOF(utf16RelPath));
 
-	::DeleteFileW(utf16RelPath);
-
-	return true;
+	return ::DeleteFileW(utf16RelPath) != FALSE;
 }
 
 bool fsCreateFolderTree(BaseDir::Enum baseDir, const char* relPath)
